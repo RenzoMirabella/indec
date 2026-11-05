@@ -1,0 +1,12 @@
+# Secretos
+.env
+
+# Los Parquet van a releases de GitHub; en el repositorio solo quedan los manifiestos
+archivo/datos/
+*.parquet
+*.tmp
+*.zip
+
+# Python
+__pycache__/
+.venv/

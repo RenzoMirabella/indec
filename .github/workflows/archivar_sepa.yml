@@ -1,0 +1,86 @@
+name: Archivar SEPA
+
+on:
+  schedule:
+    # Horario UTC. El archivo del dia aparecio cerca de las 16:20 UTC (13:20 en
+    # Argentina). La segunda corrida recupera lo que la primera no haya encontrado.
+    - cron: "30 18 * * *"
+    - cron: "30 23 * * *"
+  workflow_dispatch:
+
+# Evita que dos corridas suban archivos y commiteen al mismo tiempo.
+concurrency:
+  group: archivar-sepa
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  archivar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: requirements.txt
+
+      - name: Instalar dependencias
+        run: pip install -r requirements.txt
+
+      - name: Correr tests
+        run: python -m unittest discover -s tests
+
+      # Si falla un dia, igual se publican los demas. El error se informa al final.
+      - name: Archivar
+        id: archivar
+        run: |
+          set +e
+          python pipeline/sepa_archivador.py --salida archivo
+          echo "codigo=$?" >> "$GITHUB_OUTPUT"
+
+      # Los datos van a releases porque pesan demasiado para el repositorio. Se suben
+      # antes de commitear el manifiesto: si esto falla, la proxima corrida reprocesa.
+      - name: Subir datos a releases mensuales
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          shopt -s nullglob
+          for carpeta in archivo/datos/*/; do
+            mes=$(basename "$carpeta")
+            release="sepa-$mes"
+            gh release view "$release" >/dev/null 2>&1 || \
+              gh release create "$release" --title "Base SEPA $mes" \
+                --notes "Precios de SEPA filtrados por zona. Fuente: Precios Claros, CC-BY 4.0."
+            gh release upload "$release" "$carpeta"*.parquet --clobber
+          done
+
+      - name: Guardar manifiestos
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add archivo/manifiestos
+          if git diff --cached --quiet; then
+            echo "Sin fechas nuevas"
+          else
+            git commit -m "Archivar SEPA: $(date -u +%F)"
+            git pull --rebase
+            git push
+          fi
+
+      - name: Mostrar alertas del ultimo dia
+        run: |
+          ultimo=$(ls archivo/manifiestos/*.json 2>/dev/null | tail -n 1)
+          if [ -n "$ultimo" ]; then
+            python -c "import json,sys; [print('::warning::' + a) for a in json.load(open(sys.argv[1], encoding='utf-8'))['alertas']]" "$ultimo"
+          fi
+
+      - name: Informar errores de la corrida
+        if: steps.archivar.outputs.codigo != '0'
+        run: |
+          echo "::error::El archivador termino con codigo ${{ steps.archivar.outputs.codigo }}"
+          exit 1

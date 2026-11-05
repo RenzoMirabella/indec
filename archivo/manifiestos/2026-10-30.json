@@ -1,0 +1,381 @@
+{
+  "version_esquema": 1,
+  "fecha": "2026-10-30",
+  "estado": "parcial",
+  "generado_utc": "2026-11-03T21:50:32+00:00",
+  "fuente": {
+    "dia_semana": "viernes",
+    "url": "https://datos.produccion.gob.ar/dataset/6f47ec76-d1ce-4e34-a7e1-621fe9b1d0b5/resource/91bc072a-4726-44a1-85ec-4a8467aad27e/download/sepa_viernes.zip",
+    "bytes": 324628542,
+    "sha256": "be1d0320552a512932d531d82161ee112ec99b7e8f17f07e4d546a94850ac062",
+    "etag": "\"1793377223.61-324628542\"",
+    "last_modified": "Fri, 30 Oct 2026 16:20:23 GMT"
+  },
+  "zonas": {
+    "gba_ampliado": {
+      "lat": -34.6037,
+      "lon": -58.3816,
+      "radio_km": 60.0
+    },
+    "mar_del_plata": {
+      "lat": -38.0055,
+      "lon": -57.5426,
+      "radio_km": 30.0
+    }
+  },
+  "salidas": {
+    "productos": {
+      "archivo": "productos_2026-10-30.parquet",
+      "filas": 7783653,
+      "bytes": 66855524,
+      "sha256": "22cf39ef48a4ac604ed440a9f0de355b271f30693044584d430fc1ffbb03ff07"
+    },
+    "sucursales": {
+      "archivo": "sucursales_2026-10-30.parquet",
+      "filas": 2632,
+      "bytes": 112243,
+      "sha256": "e17ae8bf13b37361953eff1c5cc1e94dfea0f44aa15474cf6d3cd6850eed2d71"
+    }
+  },
+  "alertas": [
+    "comercio 47: declara ultima actualizacion 2025-06-11 (506 dias)",
+    "comercio 11: 51258 filas de sucursales desconocidas de 2384057",
+    "comercio 36: error (ZIP de 0 bytes)",
+    "comercio 3: estaba el 2026-10-29 y hoy no vino",
+    "comercio 4: estaba el 2026-10-29 y hoy no vino",
+    "comercio 8: estaba el 2026-10-29 y hoy no vino"
+  ],
+  "comercios": [
+    {
+      "id_comercio": "12",
+      "archivo": "sepa_1_comercio-sepa-12_2026-10-30_09-05-10.zip",
+      "bytes_zip": 8468997,
+      "estado": "ok",
+      "banderas": [
+        "COTO CICSA"
+      ],
+      "ultima_actualizacion": "2026-10-30T01:10:59-03:00",
+      "sucursales": 122,
+      "sucursales_en_zona": 108,
+      "sucursales_rechazadas": 0,
+      "sucursales_reparadas": 0,
+      "filas_leidas": 1057282,
+      "filas_archivadas": 912314,
+      "filas_huerfanas": 0,
+      "filas_rechazadas": 0,
+      "filas_reparadas": 0,
+      "filas_latin1": 0,
+      "cierre_del_archivo": "2026-10-30T01:10:59-03:00",
+      "columnas_faltantes": [],
+      "columnas_extra": [],
+      "ejemplos_rechazadas": []
+    },
+    {
+      "id_comercio": "13",
+      "archivo": "sepa_1_comercio-sepa-13_2026-10-30_09-05-10.zip",
+      "bytes_zip": 16744666,
+      "estado": "ok",
+      "banderas": [
+        "Cooperativa Obrera Limitada de Consumo y Vivienda"
+      ],
+      "ultima_actualizacion": "2026-10-30T04:00:07-03:00",
+      "sucursales": 156,
+      "sucursales_en_zona": 8,
+      "sucursales_rechazadas": 0,
+      "sucursales_reparadas": 0,
+      "filas_leidas": 715814,
+      "filas_archivadas": 37897,
+      "filas_huerfanas": 0,
+      "filas_rechazadas": 0,
+      "filas_reparadas": 0,
+      "filas_latin1": 0,
+      "cierre_del_archivo": "2026-10-30T04:00:07-03:00",
+      "columnas_faltantes": [],
+      "columnas_extra": [],
+      "ejemplos_rechazadas": []
+    },
+    {
+      "id_comercio": "15",
+      "archivo": "sepa_1_comercio-sepa-15_2026-10-30_09-05-10.zip",
+      "bytes_zip": 95134228,
+      "estado": "ok",
+      "banderas": [
+        "Supermercados DIA"
+      ],
+      "ultima_actualizacion": "2026-10-30T04:05:37-03:00",
+      "sucursales": 971,
+      "sucursales_en_zona": 760,
+      "sucursales_rechazadas": 0,
+      "sucursales_reparadas": 0,
+      "filas_leidas": 4206561,
+      "filas_archivadas": 3269020,
+      "filas_huerfanas": 0,
+      "filas_rechazadas": 0,
+      "filas_reparadas": 0,
+      "filas_latin1": 0,
+      "cierre_del_archivo": "2026-10-30T04:05:37-03:00",
+      "columnas_faltantes": [],
+      "columnas_extra": [],
+      "ejemplos_rechazadas": []
+    },
+    {
+      "id_comercio": "20",
+      "archivo": "sepa_1_comercio-sepa-20_2026-10-30_09-05-10.zip",
+      "bytes_zip": 93501,
+      "estado": "ok",
+      "banderas": [
+        "LA AGRICOLA REGIONAL COOPERATIVA LIMITADA"
+      ],
+      "ultima_actualizacion": "2026-10-29T18:48:45-03:00",
+      "sucursales": 4,
+      "sucursales_en_zona": 0,
+      "sucursales_rechazadas": 0,
+      "sucursales_reparadas": 0,
+      "filas_leidas": 7532,
+      "filas_archivadas": 0,
+      "filas_huerfanas": 0,
+      "filas_rechazadas": 0,
+      "filas_reparadas": 0,
+      "filas_latin1": 0,
+      "cierre_del_archivo": "2026-10-29T18:48:45-03:00",
+      "columnas_faltantes": [],
+      "columnas_extra": [],
+      "ejemplos_rechazadas": []
+    },
+    {
+      "id_comercio": "21",
+      "archivo": "sepa_1_comercio-sepa-21_2026-10-30_09-05-10.zip",
+      "bytes_zip": 1229787,
+      "estado": "ok",
+      "banderas": [
+        "Toledo"
+      ],
+      "ultima_actualizacion": "2026-10-30T05:00:02-03:00",
+      "sucursales": 28,
+      "sucursales_en_zona": 23,
+      "sucursales_rechazadas": 0,
+      "sucursales_reparadas": 0,
+      "filas_leidas": 50788,
+      "filas_archivadas": 41293,
+      "filas_huerfanas": 0,
+      "filas_rechazadas": 0,
+      "filas_reparadas": 0,
+      "filas_latin1": 0,
+      "cierre_del_archivo": "2026-10-30T02:00:54-03:00",
+      "columnas_faltantes": [],
+      "columnas_extra": [],
+      "ejemplos_rechazadas": []
+    },
+    {
+      "id_comercio": "23",
+      "archivo": "sepa_1_comercio-sepa-23_2026-10-30_09-05-10.zip",
+      "bytes_zip": 46060,
+      "estado": "ok",
+      "banderas": [
+        "Axion Energy"
+      ],
+      "ultima_actualizacion": "2026-10-30T04:00:00-0300",
+      "sucursales": 54,
+      "sucursales_en_zona": 38,
+      "sucursales_rechazadas": 0,
+      "sucursales_reparadas": 0,
+      "filas_leidas": 6418,
+      "filas_archivadas": 4520,
+      "filas_huerfanas": 0,
+      "filas_rechazadas": 0,
+      "filas_reparadas": 0,
+      "filas_latin1": 0,
+      "cierre_del_archivo": "2026-10-30T04:00:00-0300",
+      "columnas_faltantes": [],
+      "columnas_extra": [],
+      "ejemplos_rechazadas": []
+    },
+    {
+      "id_comercio": "47",
+      "archivo": "sepa_1_comercio-sepa-47_2026-10-30_09-05-10.zip",
+      "bytes_zip": 494841,
+      "estado": "ok",
+      "banderas": [
+        "Sup. Unicoop"
+      ],
+      "ultima_actualizacion": "2025-06-11T21:00:01-03:00",
+      "sucursales": 3,
+      "sucursales_en_zona": 0,
+      "sucursales_rechazadas": 0,
+      "sucursales_reparadas": 0,
+      "filas_leidas": 19272,
+      "filas_archivadas": 0,
+      "filas_huerfanas": 0,
+      "filas_rechazadas": 0,
+      "filas_reparadas": 0,
+      "filas_latin1": 0,
+      "cierre_del_archivo": "2025-06-11T21:00:01-03:00",
+      "columnas_faltantes": [],
+      "columnas_extra": [],
+      "ejemplos_rechazadas": []
+    },
+    {
+      "id_comercio": "9",
+      "archivo": "sepa_1_comercio-sepa-9_2026-10-30_09-05-10.zip",
+      "bytes_zip": 7038248,
+      "estado": "ok",
+      "banderas": [
+        "Disco",
+        "Jumbo",
+        "Vea"
+      ],
+      "ultima_actualizacion": "2026-10-30T05:01:47-03:00",
+      "sucursales": 256,
+      "sucursales_en_zona": 90,
+      "sucursales_rechazadas": 0,
+      "sucursales_reparadas": 0,
+      "filas_leidas": 1265333,
+      "filas_archivadas": 492566,
+      "filas_huerfanas": 49,
+      "filas_rechazadas": 0,
+      "filas_reparadas": 0,
+      "filas_latin1": 0,
+      "cierre_del_archivo": "2026-10-30T05:01:59-03:00",
+      "columnas_faltantes": [],
+      "columnas_extra": [],
+      "ejemplos_rechazadas": []
+    },
+    {
+      "id_comercio": "10",
+      "archivo": "sepa_2_comercio-sepa-10_2026-10-30_01-05-08.zip",
+      "bytes_zip": 129769556,
+      "estado": "ok",
+      "banderas": [
+        "Express",
+        "Hipermercado Carrefour",
+        "Market",
+        "Maxi"
+      ],
+      "ultima_actualizacion": "2026-10-30T08:30:02-03:00",
+      "sucursales": 730,
+      "sucursales_en_zona": 521,
+      "sucursales_rechazadas": 0,
+      "sucursales_reparadas": 0,
+      "filas_leidas": 3510266,
+      "filas_archivadas": 2224874,
+      "filas_huerfanas": 0,
+      "filas_rechazadas": 0,
+      "filas_reparadas": 0,
+      "filas_latin1": 0,
+      "cierre_del_archivo": "2026-10-30T09:19:16-03:00",
+      "columnas_faltantes": [],
+      "columnas_extra": [],
+      "ejemplos_rechazadas": []
+    },
+    {
+      "id_comercio": "11",
+      "archivo": "sepa_2_comercio-sepa-11_2026-10-30_01-05-08.zip",
+      "bytes_zip": 41594864,
+      "estado": "ok",
+      "banderas": [
+        "Changomas",
+        "HiperChangomas",
+        "SuperChangomas"
+      ],
+      "ultima_actualizacion": "2021-04-03T12:53:57-03:00",
+      "sucursales": 91,
+      "sucursales_en_zona": 29,
+      "sucursales_rechazadas": 0,
+      "sucursales_reparadas": 0,
+      "filas_leidas": 2384057,
+      "filas_archivadas": 793675,
+      "filas_huerfanas": 51258,
+      "filas_rechazadas": 0,
+      "filas_reparadas": 0,
+      "filas_latin1": 0,
+      "cierre_del_archivo": "2026-10-30T05:20:23-03:00",
+      "columnas_faltantes": [],
+      "columnas_extra": [],
+      "ejemplos_rechazadas": []
+    },
+    {
+      "id_comercio": "2",
+      "archivo": "sepa_2_comercio-sepa-2_2026-10-30_01-05-08.zip",
+      "bytes_zip": 23409089,
+      "estado": "ok",
+      "banderas": [
+        "Bomba",
+        "La Anonima",
+        "Topsy"
+      ],
+      "ultima_actualizacion": "2026-10-30T04:00:14-03:00",
+      "sucursales": 184,
+      "sucursales_en_zona": 2,
+      "sucursales_rechazadas": 0,
+      "sucursales_reparadas": 0,
+      "filas_leidas": 1016402,
+      "filas_archivadas": 7494,
+      "filas_huerfanas": 0,
+      "filas_rechazadas": 0,
+      "filas_reparadas": 0,
+      "filas_latin1": 0,
+      "cierre_del_archivo": "2026-10-30T04:00:59-03:00",
+      "columnas_faltantes": [],
+      "columnas_extra": [],
+      "ejemplos_rechazadas": []
+    },
+    {
+      "id_comercio": "36",
+      "archivo": "sepa_2_comercio-sepa-36_2026-10-30_01-05-08.zip",
+      "bytes_zip": 0,
+      "estado": "error",
+      "detalle": "ZIP de 0 bytes",
+      "filas_archivadas": 0,
+      "filas_parciales": 0
+    },
+    {
+      "id_comercio": "5",
+      "archivo": "sepa_2_comercio-sepa-5_2026-10-30_01-05-08.zip",
+      "bytes_zip": 99063,
+      "estado": "ok",
+      "banderas": [
+        "California Supermercados"
+      ],
+      "ultima_actualizacion": "2026-10-30T09:00:02-03:00",
+      "sucursales": 7,
+      "sucursales_en_zona": 0,
+      "sucursales_rechazadas": 0,
+      "sucursales_reparadas": 0,
+      "filas_leidas": 18907,
+      "filas_archivadas": 0,
+      "filas_huerfanas": 0,
+      "filas_rechazadas": 0,
+      "filas_reparadas": 0,
+      "filas_latin1": 0,
+      "cierre_del_archivo": "2026-10-30T09:00:02-03:00",
+      "columnas_faltantes": [],
+      "columnas_extra": [],
+      "ejemplos_rechazadas": []
+    },
+    {
+      "id_comercio": "6",
+      "archivo": "sepa_2_comercio-sepa-6_2026-10-30_01-05-08.zip",
+      "bytes_zip": 502062,
+      "estado": "ok",
+      "banderas": [
+        "Maxi Comodin",
+        "Supermercados Comodin"
+      ],
+      "ultima_actualizacion": "2026-10-30T09:30:00-03:00",
+      "sucursales": 26,
+      "sucursales_en_zona": 0,
+      "sucursales_rechazadas": 0,
+      "sucursales_reparadas": 25,
+      "filas_leidas": 18642,
+      "filas_archivadas": 0,
+      "filas_huerfanas": 0,
+      "filas_rechazadas": 0,
+      "filas_reparadas": 0,
+      "filas_latin1": 0,
+      "cierre_del_archivo": "2026-10-30T09:30:00-03:00",
+      "columnas_faltantes": [],
+      "columnas_extra": [],
+      "ejemplos_rechazadas": []
+    }
+  ]
+}
