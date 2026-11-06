@@ -1,0 +1,367 @@
+<!doctype html>
+<html lang="es-AR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Monitor del bolsillo</title>
+<meta name="description" content="En {{MES}}, una familia de 4 en el Gran Buenos Aires necesitó {{SALARIOS}} salarios mínimos para no ser pobre. La historia mes por mes desde 2016, con datos oficiales.">
+<meta property="og:title" content="{{SALARIOS_REDONDO}} salarios mínimos para no ser pobre">
+<meta property="og:description" content="Cuántos ingresos hacen falta para pagar la canasta básica, mes por mes desde 2016, con datos oficiales.">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#0B5A49">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230B5A49'/%3E%3Cpath d='M7 8h5v16H7zM14 8h5v16h-5z' fill='%239BE8CC'/%3E%3Cpath d='M21 8h4v6h-4z' fill='%239BE8CC'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Libre+Franklin:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  color-scheme:light;
+  --verde:#0B5A49; --verde-osc:#07382E; --menta:#9BE8CC; --menta-suave:#D8F5EA;
+  --tinta:#10211D; --tinta-2:#46574F; --linea:#D9E2DD; --fondo:#FFFFFF; --fondo-2:#F2F6F4;
+  --gutter:clamp(16px,4vw,64px);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;scrollbar-color:var(--verde) var(--fondo-2)}
+body{font-family:'Libre Franklin',system-ui,sans-serif;color:var(--tinta);background:var(--fondo);line-height:1.5;font-size:17px;font-variant-numeric:tabular-nums;-webkit-text-size-adjust:100%}
+::selection{background:var(--menta);color:var(--verde-osc)}
+a{color:inherit;text-underline-offset:3px}
+:focus-visible{outline:3px solid var(--tinta);outline-offset:2px}
+.heroe :focus-visible{outline-color:#fff}
+h1,h2,h3{font-family:'Bricolage Grotesque','Libre Franklin',sans-serif;font-weight:800;letter-spacing:-.02em;line-height:1.04;text-wrap:balance}
+.envoltura{max-width:1280px;margin:0 auto;padding-inline:var(--gutter)}
+.saltar{position:absolute;left:-999px;top:8px;background:#fff;color:var(--tinta);padding:10px 14px;border-radius:6px;z-index:2}
+.saltar:focus{left:16px}
+
+.heroe{background:var(--verde);color:#fff}
+.barra{display:flex;justify-content:space-between;align-items:center;gap:8px 20px;padding-block:20px;font-weight:600;flex-wrap:wrap}
+.marca{font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:22px;letter-spacing:-.01em}
+.barra nav{display:flex;gap:22px;font-size:15px}
+.barra nav a{color:#fff;padding-block:10px}
+.heroe h1{font-size:clamp(38px,5.2vw,74px);max-width:21ch;margin-top:clamp(10px,1.6vw,22px)}
+.bajada{font-size:clamp(17px,1.5vw,20px);color:var(--menta-suave);margin-top:16px;max-width:62ch}
+.bloques{margin-top:clamp(26px,3.2vw,40px);padding-bottom:clamp(36px,4.6vw,60px);display:grid;gap:22px}
+.fila-t{display:flex;justify-content:space-between;align-items:baseline;gap:14px;margin-bottom:9px}
+.fila-t b{font-size:clamp(15px,1.5vw,20px);font-weight:700}
+.fila-t span{font-size:clamp(15px,1.3vw,18px);color:var(--menta-suave)}
+.tira{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:4px}
+.celda{height:clamp(46px,5.8vw,78px);background:rgba(255,255,255,.1);position:relative;overflow:hidden;border-radius:4px}
+.celda i{position:absolute;inset:0 auto 0 0;background:var(--menta);transform-origin:left;animation:llenar .7s cubic-bezier(.16,1,.3,1) both;animation-delay:calc(var(--n)*90ms + 120ms)}
+.celda em{position:absolute;left:10px;top:50%;transform:translateY(-50%);font-style:normal;font-weight:700;color:var(--verde-osc);font-size:clamp(15px,1.5vw,20px);font-family:'Bricolage Grotesque',sans-serif}
+.tira.alim .celda i{background:#fff}
+@keyframes llenar{from{transform:scaleX(.04)}to{transform:scaleX(1)}}
+
+section{padding-block:clamp(44px,6vw,80px);scroll-margin-top:8px}
+section h2{font-size:clamp(30px,3.6vw,48px);max-width:24ch}
+.intro{color:var(--tinta-2);margin-top:12px;max-width:66ch}
+.grafico-cabeza{display:grid;gap:18px}
+.controles{display:flex;flex-wrap:wrap;gap:12px 24px;margin-top:6px}
+.selector{display:inline-flex;background:var(--fondo-2);border-radius:8px;padding:4px;flex-wrap:wrap}
+.selector button{font:600 15px 'Libre Franklin',sans-serif;color:var(--tinta);background:none;border:0;border-radius:6px;padding:10px 16px;cursor:pointer;min-height:44px}
+.selector button:hover{background:var(--linea)}
+.selector button[aria-pressed=true]{background:var(--verde);color:#fff}
+.lienzo{position:relative;margin-top:22px;touch-action:pan-y}
+.lienzo svg{display:block;width:100%;overflow:visible}
+.tip{position:absolute;pointer-events:none;background:var(--tinta);color:#fff;border-radius:6px;padding:8px 12px;font-size:14px;line-height:1.35;white-space:nowrap;transform:translate(-50%,-115%);opacity:0;transition:opacity .12s;z-index:1}
+.tip b{display:block;font-size:18px}
+.nota{font-size:14px;color:var(--tinta-2);margin-top:12px;max-width:80ch}
+details{margin-top:18px}
+summary{cursor:pointer;font-weight:600;min-height:44px;display:flex;align-items:center}
+summary:hover{color:var(--verde)}
+.tabla-caja{overflow:auto;max-height:440px;border:1px solid var(--linea);border-radius:6px;margin-top:8px}
+table{border-collapse:collapse;width:100%;font-size:15px;min-width:760px}
+caption{text-align:left;padding:10px 12px;font-size:14px;color:var(--tinta-2)}
+th,td{padding:8px 12px;border-bottom:1px solid var(--linea);text-align:right;white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+thead th{position:sticky;top:0;background:var(--fondo-2);font-weight:600}
+
+.cubre{background:var(--fondo-2)}
+.leyenda{display:flex;flex-wrap:wrap;gap:8px 20px;margin-top:20px;font-size:15px}
+.ley{display:inline-flex;align-items:center;gap:8px}
+.ley .seg{display:inline-block;width:18px;height:12px;border-radius:2px}
+.seg{display:block;height:100%;background:var(--verde)}
+.seg.bono{background:#37937A}
+.barras{margin-top:18px;display:grid;gap:18px;position:relative}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+.b-fila{display:grid;grid-template-columns:minmax(0,300px) 1fr;gap:6px 28px;align-items:center}
+.b-nombre b{display:block;font-weight:700}
+.b-nombre span{font-size:14px;color:var(--tinta-2);display:block;line-height:1.35}
+.b-pista{position:relative;height:40px}
+.barras::after{content:"";position:absolute;left:calc(328px + (100% - 328px)*{{LINEA_100}}/100);top:-4px;bottom:-4px;width:2px;background:var(--tinta);box-shadow:0 0 0 1px var(--fondo-2)}
+.b-marcas{display:flex;align-items:center;gap:2px;height:100%}
+.b-marcas .seg:first-child{border-radius:0}
+.b-marcas .seg:nth-last-child(2){border-radius:0 4px 4px 0}
+.b-num{margin-left:6px;font-size:16px;font-weight:700;background:var(--fondo-2);padding:2px 5px;position:relative;z-index:1}
+.marca-100{position:relative;height:22px;margin-left:calc(300px + 28px);font-size:14px;font-weight:600;margin-top:24px}
+.marca-100 span{position:absolute;left:{{LINEA_100}}%;transform:translateX(-50%);white-space:nowrap}
+
+.citar{display:grid;grid-template-columns:minmax(0,3fr) minmax(0,2fr);gap:clamp(30px,5vw,72px)}
+.campo{display:block;margin-top:20px;font-weight:600;font-size:15px}
+.campo select{display:block;margin-top:6px;font:500 16px 'Libre Franklin',sans-serif;color:var(--tinta);background:#fff;border:2px solid var(--verde);border-radius:6px;padding:10px 12px;min-height:46px;max-width:100%}
+.cita{background:var(--menta-suave);border-radius:8px;padding:24px;margin-top:16px;font-size:clamp(18px,1.6vw,21px);line-height:1.4;font-weight:500}
+.boton{display:inline-flex;align-items:center;min-height:46px;background:var(--verde);color:#fff;font:600 16px 'Libre Franklin',sans-serif;border:0;border-radius:6px;padding:10px 18px;margin:16px 10px 0 0;cursor:pointer;text-decoration:none}
+.boton:hover{background:var(--verde-osc)}
+.boton.sec{background:#fff;color:var(--verde);box-shadow:inset 0 0 0 2px var(--verde)}
+.boton.sec:hover{background:var(--menta-suave)}
+.limites h3{font-size:26px}
+.limites ul{list-style:none;margin-top:12px}
+.limites li{padding-block:12px;border-top:1px solid var(--linea);font-size:16px}
+
+.metodo{background:var(--fondo-2)}
+.metodo .columnas{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:28px 56px;margin-top:24px}
+.metodo h3{font-size:22px;margin-bottom:8px}
+.metodo p,.metodo li{font-size:16px;max-width:64ch}
+.metodo ul{padding-left:18px}.metodo li{margin-bottom:6px}
+footer{background:var(--verde-osc);color:var(--menta-suave);font-size:15px;padding-block:30px}
+
+@media (max-width:760px){
+  .b-fila{grid-template-columns:1fr}
+  .barras::after,.marca-100{display:none}
+  .barras{margin-top:26px;gap:22px}
+  .b-pista::after{content:"";position:absolute;left:{{LINEA_100}}%;top:-7px;bottom:-7px;width:2px;background:var(--tinta);box-shadow:0 0 0 1px var(--fondo-2)}
+  .b-pista::before{content:"100%";position:absolute;left:{{LINEA_100}}%;top:-26px;transform:translateX(-50%);font-size:13px;font-weight:600}
+  .controles .selector{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:2px}
+  .controles .selector button{padding:8px 6px;line-height:1.2;font-size:14px}
+  .citar{grid-template-columns:1fr}
+  .tira{gap:3px}
+  .celda em{left:5px}
+  .controles .selector{width:100%}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+@media print{.selector,.boton,nav,.saltar{display:none}}
+</style>
+</head>
+<body>
+<a class="saltar" href="#historia">Saltar a la historia</a>
+<header class="heroe">
+  <div class="envoltura">
+    <div class="barra">
+      <div class="marca">Monitor del bolsillo</div>
+      <nav aria-label="Secciones"><a href="#historia">Historia</a><a href="#ingresos">Ingresos</a><a href="#citar">Citar</a><a href="#metodo">Metodología</a></nav>
+    </div>
+    <h1>Una familia de&nbsp;4 necesita {{SALARIOS_REDONDO}}&nbsp;salarios mínimos para no ser pobre</h1>
+    <p class="bajada">Gran Buenos Aires, {{MES}}. Cada cuadro de abajo es un salario mínimo bruto de {{SALARIO_MINIMO}}.</p>
+    <div class="bloques" role="img" aria-label="{{ETIQUETA_TIRAS}}">{{TIRAS}}</div>
+  </div>
+</header>
+
+<main>
+  <section id="historia">
+    <div class="envoltura">
+      <div class="grafico-cabeza">
+        <div>
+          <h2>Cómo cambió desde abril de 2016</h2>
+          <p class="intro" id="grafico-intro">Salarios mínimos necesarios para que una familia de 4 no sea pobre, mes por mes.</p>
+        </div>
+        <div class="controles">
+          <div class="selector" role="group" aria-label="Ingreso del gráfico">
+            <button type="button" aria-pressed="true" data-ingreso="smvm">Salario mínimo</button>
+            <button type="button" aria-pressed="false" data-ingreso="ripte">Sueldo registrado</button>
+            <button type="button" aria-pressed="false" data-ingreso="haber">Jubilación mínima</button>
+          </div>
+          <div class="selector" role="group" aria-label="Canasta del gráfico">
+            <button type="button" aria-pressed="true" data-canasta="cbt">Para no ser pobre</button>
+            <button type="button" aria-pressed="false" data-canasta="cba">Para no ser indigente</button>
+          </div>
+        </div>
+      </div>
+      <div class="lienzo" id="lienzo"><div class="tip" id="tip"></div></div>
+      <p class="sr" id="anuncio" role="status" aria-live="polite"></p>
+      <p class="nota" id="grafico-nota"></p>
+      <details>
+        <summary>Ver todos los meses como tabla</summary>
+        <p class="nota" id="tabla-nota">Montos en pesos de cada mes, sin ajustar por inflación.</p>
+        <div class="tabla-caja" tabindex="0" role="region" aria-labelledby="tabla-nota">
+          <table>
+            <thead><tr><th scope="col">Mes</th><th scope="col">Canasta total, familia de 4</th><th scope="col">Canasta de alimentos, familia de 4</th><th scope="col">Salario mínimo</th><th scope="col">Salarios para la total</th><th scope="col">Salarios para alimentos</th><th scope="col">Jubilación mínima</th><th scope="col">RIPTE</th></tr></thead>
+            <tbody>{{TABLA}}</tbody>
+          </table>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <section class="cubre" id="ingresos">
+    <div class="envoltura">
+      <h2>Qué parte de la canasta cubre cada ingreso</h2>
+      <p class="intro">Cada barra compara un ingreso con la canasta total del hogar indicado, en el Gran Buenos Aires. Los salarios están en bruto. La línea marca el punto en que alcanza justo.</p>
+      <div class="leyenda">{{LEYENDA}}</div>
+      <div class="marca-100" aria-hidden="true"><span>100% de la canasta</span></div>
+      <div class="barras">{{BARRAS}}</div>
+      <p class="nota">Con la mínima, una persona sola puede superar la línea porque la canasta se ajusta según las calorías que necesita cada edad y sexo: no contempla remedios, alquiler ni vivir solo. {{NOTA_CORRECCION}} La jubilación se toma tal como la publica ANSES, sin descontar nada. Fuentes: INDEC, Secretaría de Trabajo y ANSES; el bono, según notas de prensa, sin confirmar en el Boletín Oficial.</p>
+    </div>
+  </section>
+
+  <section id="citar">
+    <div class="envoltura citar">
+      <div>
+        <h2>Citalo tal cual</h2>
+        <label class="campo" for="mes-cita">Elegí un mes
+          <select id="mes-cita"></select>
+        </label>
+        <p class="cita" id="cita">{{CITA}}</p>
+        <button class="boton" id="copiar" type="button">Copiar el texto</button>
+        <a class="boton sec" href="datos/indicadores.csv" download>Descargar los datos</a>
+      </div>
+      <div class="limites">
+        <h3>Antes de citar</h3>
+        <ul>
+          <li>La canasta oficial corresponde solo al Gran Buenos Aires.</li>
+          <li>Los salarios están en bruto: lo que se cobra en mano es menos.</li>
+          <li>No se suman asignaciones familiares ni otras ayudas al ingreso del hogar.</li>
+          <li>El RIPTE incluye solo a personas registradas y estables, y su fuente aclara que no mide la evolución de los salarios.</li>
+          <li>El bono de jubilados se muestra solo en el último mes disponible.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="metodo" id="metodo">
+    <div class="envoltura">
+      <h2>Cómo se calcula</h2>
+      <div class="columnas">
+        <div>
+          <h3>La cuenta</h3>
+          <p>Se divide la canasta del hogar por el ingreso del mismo mes. La familia de 4 es el hogar tipo del INDEC: varón de 35, mujer de 31, hijo de 6 e hija de 8, equivalentes a 3,09 adultos. Para jubilados se usan 0,83 (varón) y 0,67 (mujer) de la tabla oficial, para edades de 61 a 75 años.</p>
+        </div>
+        <div>
+          <h3>Las fuentes</h3>
+          <ul>
+            <li><a href="https://api.indec.gob.ar/docs">Canastas básicas: API del INDEC</a></li>
+            <li><a href="https://www.indec.gob.ar/ftp/cuadros/sociedad/EPH_metodologia_22_pobreza.pdf">Adultos equivalentes: Metodología 22 del INDEC</a></li>
+            <li><a href="https://datos.gob.ar/dataset/sspm-salario-minimo-vital-movil-pesos-corrientes">Salario mínimo: Secretaría de Trabajo</a></li>
+            <li><a href="https://datos.gob.ar/dataset/sspm-haber-minimo-jubilatorio">Jubilación mínima: ANSES</a></li>
+            <li><a href="https://www.argentina.gob.ar/trabajo/seguridadsocial/ripte">RIPTE: Secretaría de Trabajo</a></li>
+            <li><a href="{{BONO_FUENTE}}">Bono de jubilados: nota de prensa, sin confirmar en el Boletín Oficial</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer><div class="envoltura">Actualizado el {{ACTUALIZADO}}. Página no partidista: muestra datos y sus límites.</div></footer>
+
+<script id="datos" type="application/json">{{DATOS_JSON}}</script>
+<script>
+(function(){
+  const datos=JSON.parse(document.getElementById('datos').textContent);
+  const MES=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  const CORTO=MES.map(m=>m.slice(0,3));
+  const coma=(v,d=2)=>v.toLocaleString('es-AR',{minimumFractionDigits:d,maximumFractionDigits:d});
+  const pesos=v=>'$'+Math.round(v).toLocaleString('es-AR');
+  const mesDe=p=>({a:+p.slice(0,4),m:+p.slice(5)-1});
+  const nombreMes=p=>{const f=mesDe(p);return MES[f.m]+' de '+f.a};
+  const corto=p=>{const f=mesDe(p);return CORTO[f.m]+' '+f.a};
+  const INGRESOS={
+    smvm:{unidad:'salarios mínimos',necesarios:'necesarios',quien:'una familia de 4',nota:'Salario mínimo en bruto. Fuentes: INDEC y Secretaría de Trabajo.'},
+    ripte:{unidad:'sueldos promedio registrados',necesarios:'necesarios',quien:'una familia de 4',nota:'RIPTE en bruto, solo personas registradas y estables; su fuente aclara que no mide la evolución de los salarios. Fuentes: INDEC y Secretaría de Trabajo.'},
+    haber:{unidad:'jubilaciones mínimas',necesarios:'necesarias',quien:'una pareja de jubilados',nota:'Jubilación sin bono, pareja de 61 a 75 años. En varios períodos hubo bonos que esta serie no incluye, así que el ingreso real de esos meses fue mayor. Fuentes: INDEC y ANSES.'}
+  };
+  const CANASTAS={cbt:'no sea pobre',cba:'no sea indigente'};
+  const estado={ingreso:'smvm',canasta:'cbt',foco:null};
+  const lienzo=document.getElementById('lienzo'),tip=document.getElementById('tip');
+  const intro=document.getElementById('grafico-intro'),nota=document.getElementById('grafico-nota'),anuncio=document.getElementById('anuncio');
+
+  function dibujar(){
+    const anterior=lienzo.querySelector('svg');if(anterior)anterior.remove();
+    const clave=estado.ingreso+'_'+estado.canasta;
+    const serie=datos.map((d,i)=>({p:d.p,v:d[clave],i})).filter(d=>d.v!=null);
+    const info=INGRESOS[estado.ingreso];
+    intro.textContent=info.unidad.charAt(0).toUpperCase()+info.unidad.slice(1)+' '+info.necesarios+' para que '+info.quien+' '+CANASTAS[estado.canasta]+', mes por mes.';
+    const W=lienzo.clientWidth,chico=W<600,H=Math.max(290,Math.min(430,W*.36));
+    const m={t:26,r:chico?46:68,b:30,l:34};
+    const tope=Math.max.apply(null,serie.map(d=>d.v));
+    const paso=tope>6?2:tope>3?1:.5;
+    const ymax=Math.ceil(tope/paso)*paso;
+    const n=datos.length-1;
+    const x=i=>m.l+i/n*(W-m.l-m.r);
+    const y=v=>m.t+(1-v/ymax)*(H-m.t-m.b);
+    const ultimo=serie[serie.length-1];
+    let s='<svg viewBox="0 0 '+W+' '+H+'" height="'+H+'" role="img" tabindex="0" aria-label="'+info.unidad+' '+info.necesarios+' por mes. Último dato: '+coma(ultimo.v)+' en '+nombreMes(ultimo.p)+'. Los valores de cada mes están en la tabla.">';
+    for(let v=0;v<=ymax+1e-9;v+=paso){
+      s+='<line x1="'+m.l+'" x2="'+(W-m.r)+'" y1="'+y(v)+'" y2="'+y(v)+'" stroke="'+(v?'#E6ECE9':'#10211D')+'"/>';
+      s+='<text x="0" y="'+(y(v)+5)+'" font-size="14" fill="#46574F">'+coma(v,paso<1?1:0)+'</text>';
+    }
+    const salto=chico?3:1;
+    for(let a=2017;a<=mesDe(datos[n].p).a;a+=salto){
+      const i=datos.findIndex(d=>d.p===a+'-01');
+      if(i>=0)s+='<text x="'+x(i)+'" y="'+(H-8)+'" font-size="14" fill="#46574F" text-anchor="middle">'+a+'</text>';
+    }
+    const pts=serie.map(d=>x(d.i).toFixed(1)+','+y(d.v).toFixed(1)).join(' ');
+    s+='<polygon points="'+x(serie[0].i)+','+y(0)+' '+pts+' '+x(ultimo.i)+','+y(0)+'" fill="#D8F5EA"/>';
+    s+='<polyline points="'+pts+'" fill="none" stroke="#0B5A49" stroke-width="2.5" stroke-linejoin="round"/>';
+    let alto=serie[0],bajo=serie[0];
+    serie.forEach(d=>{if(d.v>alto.v)alto=d;if(d.v<bajo.v)bajo=d});
+    [[alto,-10],[bajo,20]].forEach(par=>{
+      const d=par[0];
+      if(ultimo.i-d.i<7)return;
+      const ancla=d.i>n*.75?'end':d.i<n*.2?'start':'middle';
+      s+='<circle cx="'+x(d.i)+'" cy="'+y(d.v)+'" r="4" fill="#0B5A49" stroke="#fff" stroke-width="2"/>';
+      s+='<text x="'+x(d.i)+'" y="'+(y(d.v)+par[1])+'" font-size="14" font-weight="600" fill="#10211D" text-anchor="'+ancla+'" stroke="#fff" stroke-width="3" paint-order="stroke">'+coma(d.v,1)+' en '+corto(d.p)+'</text>';
+    });
+    s+='<circle cx="'+x(ultimo.i)+'" cy="'+y(ultimo.v)+'" r="5" fill="#0B5A49" stroke="#fff" stroke-width="2"/>';
+    s+='<text x="'+(x(ultimo.i)+10)+'" y="'+(y(ultimo.v)+7)+'" font-size="20" font-weight="700" fill="#10211D">'+coma(ultimo.v,1)+'</text>';
+    s+='<line class="cruz" y1="'+m.t+'" y2="'+y(0)+'" stroke="#10211D" stroke-width="1" opacity="0"/>';
+    s+='<circle class="punto" r="5" fill="#10211D" stroke="#fff" stroke-width="2" opacity="0"/>';
+    s+='<rect class="zona" x="'+m.l+'" y="0" width="'+(W-m.l-m.r)+'" height="'+H+'" fill="transparent"/></svg>';
+    lienzo.insertAdjacentHTML('afterbegin',s);
+    const svg=lienzo.querySelector('svg'),zona=svg.querySelector('.zona'),cruz=svg.querySelector('.cruz'),punto=svg.querySelector('.punto');
+    function mostrar(indice){
+      const d=serie[indice];estado.foco=indice;
+      const X=x(d.i),Y=y(d.v);
+      cruz.setAttribute('x1',X);cruz.setAttribute('x2',X);cruz.setAttribute('opacity','.5');
+      punto.setAttribute('cx',X);punto.setAttribute('cy',Y);punto.setAttribute('opacity','1');
+      tip.innerHTML=nombreMes(d.p)+'<b>'+coma(d.v)+'</b>';
+      tip.style.left=Math.max(80,Math.min(W-80,X))+'px';tip.style.top=Math.max(50,Y)+'px';tip.style.opacity=1;
+    }
+    function ocultar(){tip.style.opacity=0;cruz.setAttribute('opacity','0');punto.setAttribute('opacity','0');estado.foco=null}
+    function desdeEvento(e){
+      const r=lienzo.getBoundingClientRect();
+      const i=Math.round((e.clientX-r.left-m.l)/(W-m.l-m.r)*n);
+      let mejor=0;serie.forEach((d,k)=>{if(Math.abs(d.i-i)<Math.abs(serie[mejor].i-i))mejor=k});
+      mostrar(mejor);
+    }
+    zona.addEventListener('pointermove',desdeEvento);
+    zona.addEventListener('pointerdown',desdeEvento);
+    zona.addEventListener('pointerleave',ocultar);
+    svg.addEventListener('keydown',e=>{
+      const pasos={ArrowLeft:-1,ArrowRight:1,PageUp:-12,PageDown:12};
+      if(!(e.key in pasos))return;
+      e.preventDefault();
+      const base=estado.foco==null?serie.length-1:estado.foco;
+      const elegido=Math.max(0,Math.min(serie.length-1,base+pasos[e.key]));
+      mostrar(elegido);
+      anuncio.textContent=nombreMes(serie[elegido].p)+': '+coma(serie[elegido].v)+' '+info.unidad+'.';
+    });
+    svg.addEventListener('blur',ocultar);
+    const primero=serie[0];
+    nota.textContent='Gran Buenos Aires, de '+nombreMes(primero.p)+' a '+nombreMes(ultimo.p)+'. '+info.nota+' Tocá o pasá por el gráfico para ver cada mes; con el teclado, usá las flechas.';
+  }
+
+  document.querySelectorAll('.selector button').forEach(b=>b.addEventListener('click',()=>{
+    const grupo=b.dataset.ingreso?'ingreso':'canasta';
+    estado[grupo]=b.dataset[grupo];
+    b.parentElement.querySelectorAll('button').forEach(o=>o.setAttribute('aria-pressed',String(o===b)));
+    dibujar();
+    anuncio.textContent=intro.textContent;
+  }));
+  let espera;addEventListener('resize',()=>{clearTimeout(espera);espera=setTimeout(dibujar,120)});
+  dibujar();
+  if(document.fonts&&document.fonts.ready)document.fonts.ready.then(dibujar);
+
+  const select=document.getElementById('mes-cita'),cita=document.getElementById('cita');
+  datos.slice().reverse().forEach(d=>{const o=document.createElement('option');o.value=d.p;o.textContent=nombreMes(d.p);select.append(o)});
+  select.addEventListener('change',()=>{
+    const d=datos.find(x=>x.p===select.value);
+    cita.textContent='En '+nombreMes(d.p)+', una familia de 4 en el Gran Buenos Aires necesitó '+pesos(d.cbt)+' para no ser pobre, el equivalente a '+coma(d.smvm_cbt)+' salarios mínimos brutos. Fuente: Monitor del bolsillo, con datos del INDEC y de la Secretaría de Trabajo.';
+  });
+  const copiar=document.getElementById('copiar');
+  copiar.addEventListener('click',async()=>{
+    try{await navigator.clipboard.writeText(cita.textContent);copiar.textContent='Texto copiado'}
+    catch(e){copiar.textContent='No se pudo copiar: seleccioná el texto'}
+    setTimeout(()=>{copiar.textContent='Copiar el texto'},2500);
+  });
+})();
+</script>
+</body>
+</html>

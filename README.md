@@ -1,6 +1,30 @@
 # Monitor del bolsillo
 
-Página pública que muestra cuánto cuesta la canasta básica y cuánto tiempo de trabajo o de jubilación hace falta para pagarla. Por ahora, este repositorio contiene el archivo de precios que va a alimentarla.
+Página pública que muestra cuánto cuesta la canasta básica y cuánto tiempo de trabajo o de jubilación hace falta para pagarla. La primera versión usa indicadores oficiales; el archivo de precios se está juntando para sumar más adelante una canasta estimada en vivo.
+
+## Página e indicadores
+
+[`pipeline/indicadores.py`](pipeline/indicadores.py) baja los datos, los valida y arma el sitio a partir de [`sitio/plantilla.html`](sitio/plantilla.html). Una tarea de GitHub Actions lo corre todos los días y publica el resultado en GitHub Pages. Si un dato no pasa las validaciones, la tarea falla y la página anterior sigue publicada.
+
+```bash
+python pipeline/indicadores.py --salida _site
+```
+
+Necesita el token de la API del INDEC como variable `INDEC_TOKEN` o en un archivo `.env`.
+
+| Dato | Fuente |
+| --- | --- |
+| Canasta básica | API del INDEC, `valorizacion_canastas_cba_cbt` |
+| Salario mínimo | datos.gob.ar, Secretaría de Trabajo |
+| Jubilación mínima | datos.gob.ar, ANSES |
+| RIPTE | datos.gob.ar, Secretaría de Trabajo |
+| Bono de jubilados | Carga manual en [`datos/bonos.csv`](datos/bonos.csv) |
+
+**Tareas a mano:**
+
+- **Bono:** agregar el monto de cada mes en `datos/bonos.csv`. Si falta, la página muestra la jubilación sin bono y la tarea avisa.
+- **Correcciones:** si una fuente trae un error, se documenta en [`datos/correcciones.csv`](datos/correcciones.csv) con la fuente que lo respalda. Si el RIPTE baja respecto del mes anterior, la tarea descarta ese valor y avisa, para revisarlo.
+- **Token:** el del INDEC vence a los 12 meses y se guarda como secreto `INDEC_TOKEN` en GitHub.
 
 ## Archivador de SEPA
 

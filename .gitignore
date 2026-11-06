@@ -10,3 +10,5 @@ archivo/datos/
 # Python
 __pycache__/
 .venv/
+_site/
+.impeccable/
