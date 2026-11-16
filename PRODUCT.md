@@ -29,6 +29,7 @@ Se consulta durante el trabajo periodístico, a menudo con poco tiempo, en compu
 ## Capabilities and Constraints
 
 - Primera versión: canasta oficial, salario mínimo, jubilación mínima con y sin bono, RIPTE y evolución desde abril de 2016.
+- Segunda etapa, sumada en noviembre de 2026: poder de compra de cada ingreso frente a un mes que elige quien lee, pobreza e indigencia por semestre y empleo informal.
 - Fuera de la primera versión: canasta estimada en vivo con SEPA y comparación con Mar del Plata.
 - Titular confirmado: cantidad de salarios mínimos. Las horas de trabajo quedan, como mucho, como dato secundario.
 - Los montos de salario, jubilación y RIPTE son brutos o tienen supuestos, y hay que decirlo donde se muestran.

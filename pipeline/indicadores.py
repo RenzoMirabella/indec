@@ -26,6 +26,9 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 API_INDEC = "https://api.indec.gob.ar/v1/valorizacion_canastas_cba_cbt"
+API_IPC = "https://api.indec.gob.ar/v1/ipc_nacional"
+API_POBREZA = "https://api.indec.gob.ar/v1/pobreza_eph"
+API_TRABAJO = "https://api.indec.gob.ar/v1/mercado_trabajo_eph"
 SERIES_ABIERTAS = {
     "smvm": (
         "https://infra.datos.gob.ar/catalog/sspm/dataset/57/distribution/57.1/download/"
@@ -44,6 +47,8 @@ SERIES_ABIERTAS = {
     ),
 }
 INICIO = "2016-04"
+# El índice de precios actual del INDEC empieza en diciembre de 2016.
+INICIO_IPC = "2016-12"
 USER_AGENT = "monitor-del-bolsillo"
 ZONA_ARGENTINA = timezone(timedelta(hours=-3))
 
@@ -66,6 +71,19 @@ class DatosInvalidos(Exception):
 def nombre_mes(periodo: str) -> str:
     anio, mes = periodo.split("-")
     return f"{MESES[int(mes) - 1]} de {anio}"
+
+
+ORDINALES = ("primer", "segundo", "tercer", "cuarto")
+
+
+def nombre_semestre(periodo: str) -> str:
+    anio, parte = periodo.split("-S")
+    return f"{ORDINALES[int(parte) - 1]} semestre de {anio}"
+
+
+def nombre_trimestre(periodo: str) -> str:
+    anio, parte = periodo.split("-T")
+    return f"{ORDINALES[int(parte) - 1]} trimestre de {anio}"
 
 
 def numero(valor: float, decimales: int = 0) -> str:
@@ -100,22 +118,143 @@ def leer_token(raiz: Path) -> str:
     return token
 
 
-def bajar_canastas(token: str) -> list[dict]:
-    """Baja las filas de valores en pesos de la canasta, página por página."""
+def _bajar_api(url: str, consulta: dict[str, str], token: str) -> list[dict]:
+    """Baja todas las filas de un servicio de la API del INDEC, página por página."""
     filas: list[dict] = []
+    consulta = {**consulta, "limit": "1000"}
+    while True:
+        consulta["offset"] = str(len(filas))
+        direccion = f"{url}?{urllib.parse.urlencode(consulta, safe='(),.')}"
+        pagina = json.loads(_pedir(direccion, {"Authorization": f"Bearer {token}"}))
+        filas.extend(pagina)
+        if len(pagina) < 1000:
+            return filas
+
+
+def bajar_canastas(token: str) -> list[dict]:
+    """Baja las filas de valores en pesos de la canasta."""
     consulta = {
         "tipo_de_indicador": "in.(CBA,CBT,Hogar 2)",
         "select": "periodo,codigo,tipo_de_indicador,valor",
         "order": "periodo,codigo,tipo_de_indicador",
-        "limit": "1000",
     }
-    while True:
-        consulta["offset"] = str(len(filas))
-        url = f"{API_INDEC}?{urllib.parse.urlencode(consulta, safe='(),')}"
-        pagina = json.loads(_pedir(url, {"Authorization": f"Bearer {token}"}))
-        filas.extend(pagina)
-        if len(pagina) < 1000:
-            return filas
+    return _bajar_api(API_INDEC, consulta, token)
+
+
+def bajar_ipc(token: str) -> list[dict]:
+    """Baja el nivel general del índice de precios del Gran Buenos Aires."""
+    consulta = {
+        "region": "eq.GBA",
+        "codigo": "eq.0",
+        "tipo_de_indicador": "eq.Indice",
+        "select": "periodo,valor",
+        "order": "periodo",
+    }
+    return _bajar_api(API_IPC, consulta, token)
+
+
+def interpretar_ipc(filas: list[dict]) -> dict[str, float]:
+    """Ordena el índice por mes y valida que no falte ningún mes desde diciembre de 2016."""
+    ipc: dict[str, float] = {}
+    for fila in filas:
+        if {"periodo", "valor"} - fila.keys():
+            raise DatosInvalidos("El índice de precios de la API del INDEC cambió de formato.")
+        periodo = str(fila["periodo"])
+        if not re.fullmatch(r"\d{6}", periodo):
+            raise DatosInvalidos(f"Período inesperado en el índice de precios: {periodo!r}.")
+        if fila["valor"] is None or float(fila["valor"]) <= 0:
+            raise DatosInvalidos(f"Índice de precios vacío o no positivo en {periodo}.")
+        ipc[f"{periodo[:4]}-{periodo[4:]}"] = float(fila["valor"])
+    if not ipc or min(ipc) != INICIO_IPC:
+        raise DatosInvalidos(f"El índice de precios tiene que empezar en {INICIO_IPC}.")
+    periodo = INICIO_IPC
+    while periodo < max(ipc):
+        periodo = _siguiente(periodo)
+        if periodo not in ipc:
+            raise DatosInvalidos(f"Falta el índice de precios de {periodo}.")
+    return ipc
+
+
+def _tasa(fila: dict, columna: str) -> float | None:
+    valor = fila.get(columna)
+    if valor is None:
+        return None
+    valor = float(valor)
+    if not 0 <= valor <= 100:
+        raise DatosInvalidos(f"Tasa fuera de rango en {columna} ({fila.get('periodo')}): {valor}.")
+    return valor
+
+
+def _observacion(fila: dict) -> str:
+    return " ".join(str(fila.get("observaciones") or "").split())
+
+
+def interpretar_pobreza(filas: list[dict]) -> list[dict]:
+    """Ordena la pobreza y la indigencia de personas por semestre."""
+    columnas = {"periodo", "tasa_pobreza_personas", "tasa_indigencia_personas", "observaciones"}
+    semestres = []
+    for fila in filas:
+        if columnas - fila.keys():
+            raise DatosInvalidos("La pobreza de la API del INDEC cambió de formato.")
+        periodo = str(fila["periodo"])
+        coincidencia = re.fullmatch(r"(\d{4})([12])S", periodo)
+        if not coincidencia:
+            raise DatosInvalidos(f"Semestre inesperado en la pobreza: {periodo!r}.")
+        pobreza = _tasa(fila, "tasa_pobreza_personas")
+        indigencia = _tasa(fila, "tasa_indigencia_personas")
+        if pobreza is None or indigencia is None or indigencia > pobreza:
+            raise DatosInvalidos(f"Pobreza o indigencia inválidas en {periodo}.")
+        observacion = _observacion(fila)
+        semestres.append({
+            "periodo": f"{coincidencia[1]}-S{coincidencia[2]}",
+            "pobreza": pobreza,
+            "indigencia": indigencia,
+            "provisorio": "provisorio" in observacion.lower(),
+            "observacion": observacion,
+        })
+    semestres.sort(key=lambda s: s["periodo"])
+    if not semestres:
+        raise DatosInvalidos("La API del INDEC no devolvió datos de pobreza.")
+    if len({s["periodo"] for s in semestres}) != len(semestres):
+        raise DatosInvalidos("La pobreza trae semestres repetidos.")
+    return semestres
+
+
+def interpretar_trabajo(filas: list[dict]) -> list[dict]:
+    """Ordena las tasas de la EPH por trimestre y calcula qué parte del empleo es informal."""
+    columnas = {
+        "periodo", "tasa_de_empleo", "tasa_de_empleo_formal", "tasa_de_empleo_informal",
+        "tasa_de_desocupacion", "observaciones",
+    }
+    trimestres = []
+    for fila in filas:
+        if columnas - fila.keys():
+            raise DatosInvalidos("El mercado de trabajo de la API del INDEC cambió de formato.")
+        periodo = str(fila["periodo"])
+        coincidencia = re.fullmatch(r"(\d{4})([1-4])T", periodo)
+        if not coincidencia:
+            raise DatosInvalidos(f"Trimestre inesperado en el mercado de trabajo: {periodo!r}.")
+        empleo = _tasa(fila, "tasa_de_empleo")
+        formal = _tasa(fila, "tasa_de_empleo_formal")
+        informal = _tasa(fila, "tasa_de_empleo_informal")
+        informalidad = None
+        if empleo and formal is not None and informal is not None:
+            # Las dos tasas son sobre la población total y tienen que sumar la de empleo.
+            if abs(formal + informal - empleo) > 0.5:
+                raise DatosInvalidos(f"El empleo formal e informal no suman el total en {periodo}.")
+            informalidad = round(informal / empleo * 100, 1)
+        observacion = _observacion(fila)
+        trimestres.append({
+            "periodo": f"{coincidencia[1]}-T{coincidencia[2]}",
+            "desocupacion": _tasa(fila, "tasa_de_desocupacion"),
+            "informalidad": informalidad,
+            "provisorio": "provisorio" in observacion.lower(),
+            "observacion": observacion,
+        })
+    trimestres.sort(key=lambda t: t["periodo"])
+    if not any(t["informalidad"] is not None for t in trimestres):
+        raise DatosInvalidos("El mercado de trabajo no trae ningún trimestre con informalidad.")
+    return trimestres
 
 
 def interpretar_canastas(filas: list[dict]) -> dict[str, dict[str, float]]:
@@ -212,6 +351,7 @@ def combinar(
         fila["cbt_pareja"] = canasta["cbt"] * ADULTOS_PAREJA_JUBILADA
         for nombre in ("smvm", "haber", "ripte"):
             fila[nombre] = series[nombre].get(periodo)
+        fila["ipc"] = series.get("ipc", {}).get(periodo)
         if fila["smvm"] is None:
             raise DatosInvalidos(f"Falta el salario mínimo de {periodo}.")
         for ingreso, hogar in (("smvm", "hogar"), ("ripte", "hogar"), ("haber", "pareja")):
@@ -268,6 +408,163 @@ def coberturas(filas: list[dict], bonos: dict[str, float]) -> tuple[list[Fila], 
         jubilacion("Dos jubilaciones mínimas, pareja", "De 61 a 75 años", ADULTOS_PAREJA_JUBILADA, 2),
     ]
     return resultado, bono
+
+
+PODER_INGRESOS = (
+    ("smvm", "Salario mínimo", "Bruto"),
+    ("haber", "Jubilación mínima", "Sin bono"),
+    ("ripte", "Sueldo promedio registrado", "RIPTE, bruto"),
+)
+
+
+def _ultimo_real(filas: list[dict], clave: str) -> dict:
+    for fila in reversed(filas):
+        if fila.get(clave) and fila.get("ipc"):
+            return fila
+    raise DatosInvalidos(f"No hay ningún mes con {clave} y con índice de precios.")
+
+
+def _real(fila: dict, clave: str) -> float:
+    return fila[clave] / fila["ipc"]
+
+
+def bases_posibles(filas: list[dict]) -> list[str]:
+    """Meses contra los que se puede comparar: tienen que tener los tres ingresos y el índice."""
+    hasta = min(_ultimo_real(filas, clave)["periodo"] for clave, _, _ in PODER_INGRESOS)
+    return [
+        f["periodo"] for f in filas
+        if INICIO_IPC <= f["periodo"] <= hasta and f.get("ipc") and all(f.get(c) for c, _, _ in PODER_INGRESOS)
+    ]
+
+
+def poder_de_compra(filas: list[dict], base: str) -> list[Fila]:
+    """Qué parte de lo que compraba cada ingreso en el mes base compra en su último mes."""
+    origen = next((f for f in filas if f["periodo"] == base), None)
+    if origen is None or base not in bases_posibles(filas):
+        raise DatosInvalidos(f"No se puede comparar el poder de compra contra {base}.")
+    barras = []
+    for clave, nombre, detalle in PODER_INGRESOS:
+        ultimo = _ultimo_real(filas, clave)
+        valor = _real(ultimo, clave) / _real(origen, clave)
+        barras.append(Fila(nombre, f"{detalle}, {nombre_mes(ultimo['periodo'])}", valor))
+    return barras
+
+
+def variacion(factor: float, plural: bool = False) -> str:
+    n = "n" if plural else ""
+    if factor >= 2:
+        verbo = "se multiplicaron" if plural else "se multiplicó"
+        return f"{verbo} por {numero(factor, 0 if factor >= 10 else 1)}"
+    if factor >= 1:
+        return f"subiero{n} {porcentaje(factor - 1)}" if plural else f"subió {porcentaje(factor - 1)}"
+    return f"bajaro{n} {porcentaje(1 - factor)}" if plural else f"bajó {porcentaje(1 - factor)}"
+
+
+def frase_poder(filas: list[dict], base: str) -> str:
+    """Explica el cambio en salarios mínimos necesarios: precios de la canasta frente al poder de compra.
+
+    Los salarios necesarios son canasta / salario, que es lo mismo que
+    (canasta / precios) / (salario / precios). Si la canasta sube como el resto
+    de los precios, todo el cambio viene de lo que compra el salario.
+    """
+    origen = next(f for f in filas if f["periodo"] == base)
+    ultimo = _ultimo_real(filas, "smvm")
+    canasta = ultimo["cbt"] / origen["cbt"]
+    precios = ultimo["ipc"] / origen["ipc"]
+    salario = _real(ultimo, "smvm") / _real(origen, "smvm")
+    texto = (
+        f"Entre {nombre_mes(base)} y {nombre_mes(ultimo['periodo'])}, los salarios mínimos necesarios "
+        f"para que una familia de 4 no sea pobre pasaron de {numero(origen['smvm_cbt'], 2)} a "
+        f"{numero(ultimo['smvm_cbt'], 2)}. La canasta total {variacion(canasta)}"
+    )
+    relacion = canasta / precios
+    if abs(relacion - 1) < 0.05:
+        return (
+            texto + f", casi lo mismo que los precios en general, que {variacion(precios, plural=True)}. "
+            "Por eso el cambio viene de lo que compra el salario mínimo, "
+            f"que hoy es el {porcentaje(salario)} de lo que compraba entonces."
+        )
+    return (
+        texto + f" y los precios en general {variacion(precios, plural=True)}: "
+        f"la canasta subió {'más' if relacion > 1 else 'menos'} que el resto. "
+        f"Y el salario mínimo compra hoy el {porcentaje(salario)} de lo que compraba entonces."
+    )
+
+
+def nota_bono_poder(filas: list[dict], bonos: dict[str, float]) -> str:
+    ultimo = _ultimo_real(filas, "haber")
+    bono = bonos.get(ultimo["periodo"], 0.0)
+    if not bono:
+        return "La jubilación se compara sin bono, porque todavía no está cargado el de cada mes."
+    return (
+        f"La jubilación se compara sin bono, porque todavía no está cargado el de cada mes. "
+        f"En {nombre_mes(ultimo['periodo'])}, el bono de {pesos(bono)} sumaba un "
+        f"{porcentaje(bono / ultimo['haber'])} a la mínima."
+    )
+
+
+def tabla_poder_html(filas: list[dict]) -> str:
+    """Cada ingreso en pesos del último mes con índice de precios."""
+    ultimo = _ultimo_real(filas, "smvm")
+    salida = []
+    for fila in reversed(filas):
+        if fila["periodo"] < INICIO_IPC or not fila.get("ipc"):
+            continue
+        celdas = [
+            pesos(fila[clave] * ultimo["ipc"] / fila["ipc"]) if fila.get(clave) else "sin dato"
+            for clave, _, _ in PODER_INGRESOS
+        ]
+        salida.append(
+            f'<tr><td>{nombre_mes(fila["periodo"])}</td><td>{numero(fila["ipc"], 1)}</td>'
+            + "".join(f"<td>{c}</td>" for c in celdas)
+            + "</tr>"
+        )
+    return "".join(salida)
+
+
+def frase_pobreza(semestres: list[dict]) -> str:
+    ultimo = semestres[-1]
+    provisorio = ", un dato provisorio" if ultimo["provisorio"] else ""
+    return (
+        f"En el {nombre_semestre(ultimo['periodo'])}{provisorio}, el {numero(ultimo['pobreza'], 1)}% de las personas "
+        f"vivía en hogares pobres y el {numero(ultimo['indigencia'], 1)}%, en hogares indigentes."
+    )
+
+
+def tabla_pobreza_html(semestres: list[dict]) -> str:
+    salida = []
+    for semestre in reversed(semestres):
+        nota = html.escape(semestre["observacion"]) if semestre["observacion"] else ""
+        salida.append(
+            f'<tr><td>{nombre_semestre(semestre["periodo"])}</td><td>{numero(semestre["pobreza"], 1)}%</td>'
+            f'<td>{numero(semestre["indigencia"], 1)}%</td><td>{nota}</td></tr>'
+        )
+    return "".join(salida)
+
+
+def notas_pobreza(semestres: list[dict]) -> str:
+    """Las aclaraciones del INDEC que no son la marca de provisorio, que ya va en la frase."""
+    return " ".join(
+        html.escape(s["observacion"].rstrip(".") + ".")
+        for s in semestres
+        if s["observacion"] and not s["provisorio"]
+    )
+
+
+def ultimo_trabajo(trimestres: list[dict]) -> dict:
+    return next(t for t in reversed(trimestres) if t["informalidad"] is not None)
+
+
+def frase_trabajo(trimestres: list[dict]) -> str:
+    ultimo = ultimo_trabajo(trimestres)
+    provisorio = ", un dato provisorio" if ultimo["provisorio"] else ""
+    texto = (
+        f"En el {nombre_trimestre(ultimo['periodo'])}{provisorio}, {numero(ultimo['informalidad'])} de cada 100 "
+        "personas ocupadas tenían un empleo informal."
+    )
+    if ultimo["desocupacion"] is not None:
+        texto += f" La desocupación era del {numero(ultimo['desocupacion'], 1)}%."
+    return texto
 
 
 def tira(titulo: str, monto: str, valor: float, clase: str, unidades: int) -> str:
@@ -337,16 +634,35 @@ def escribir_csv(destino: Path, filas: list[dict]) -> None:
         "salarios_minimos_para_cbt", "salarios_minimos_para_cba",
         "ripte_para_cbt", "ripte_para_cba",
         "jubilaciones_para_cbt_pareja", "jubilaciones_para_cba_pareja",
+        "ipc_gba",
     ]
     origen = [
         "periodo", "cba", "cbt", "cba_hogar", "cbt_hogar", "smvm", "haber", "ripte",
         "smvm_cbt", "smvm_cba", "ripte_cbt", "ripte_cba", "haber_cbt", "haber_cba",
+        "ipc",
     ]
+    _escribir_tabla(destino, columnas, ([fila.get(clave) for clave in origen] for fila in filas))
+
+
+def _escribir_tabla(destino: Path, columnas: list[str], filas) -> None:
     with destino.open("w", encoding="utf-8", newline="") as archivo:
         escritor = csv.writer(archivo)
         escritor.writerow(columnas)
         for fila in filas:
-            escritor.writerow(["" if fila[clave] is None else fila[clave] for clave in origen])
+            escritor.writerow(["" if valor is None else valor for valor in fila])
+
+
+def escribir_csv_sociales(carpeta: Path, semestres: list[dict], trimestres: list[dict]) -> None:
+    _escribir_tabla(
+        carpeta / "pobreza.csv",
+        ["semestre", "pobreza_personas", "indigencia_personas", "observaciones"],
+        ([s["periodo"], s["pobreza"], s["indigencia"], s["observacion"]] for s in semestres),
+    )
+    _escribir_tabla(
+        carpeta / "trabajo.csv",
+        ["trimestre", "desocupacion", "ocupados_informales_cada_100", "observaciones"],
+        ([t["periodo"], t["desocupacion"], t["informalidad"], t["observacion"]] for t in trimestres),
+    )
 
 
 def armar_sitio(
@@ -356,10 +672,24 @@ def armar_sitio(
     bono: float,
     correcciones: list[dict],
     actualizado: datetime,
+    semestres: list[dict],
+    trimestres: list[dict],
+    bonos: dict[str, float] | None = None,
     fuente_bono: str = "https://www.argentina.gob.ar/anses",
 ) -> str:
     ultima = filas[-1]
     escala = max(1.5, max(b.cobertura + b.extra for b in barras) * 1.08)
+    poder = poder_de_compra(filas, INICIO_IPC)
+    escala_poder = max(1.5, max(b.cobertura for b in poder) * 1.08)
+    trabajo = ultimo_trabajo(trimestres)
+    sociales = {
+        "bases": bases_posibles(filas),
+        "pobreza": [
+            {"p": s["periodo"], "pobreza": s["pobreza"], "indigencia": s["indigencia"], "provisorio": s["provisorio"]}
+            for s in semestres
+        ],
+    }
+    sociales_json = json.dumps(sociales, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/")
     unidades = int(ultima["smvm_cbt"]) + 1
     series = [
         {
@@ -368,7 +698,8 @@ def armar_sitio(
             "smvm_cbt": fila["smvm_cbt"], "smvm_cba": fila["smvm_cba"],
             "ripte_cbt": fila["ripte_cbt"], "ripte_cba": fila["ripte_cba"],
             "haber_cbt": fila["haber_cbt"], "haber_cba": fila["haber_cba"],
-            "smvm": fila["smvm"],
+            "smvm": fila["smvm"], "haber": fila["haber"], "ripte": fila["ripte"],
+            "cbt_ad": fila["cbt"], "ipc": fila["ipc"],
         }
         for fila in filas
     ]
@@ -402,6 +733,18 @@ def armar_sitio(
         "CITA": frase_cita(ultima),
         "ACTUALIZADO": f"{actualizado.day} de {MESES[actualizado.month - 1]} de {actualizado.year}",
         "DATOS_JSON": datos_json,
+        "PODER_BARRAS": barras_html(poder, escala_poder),
+        "PODER_LINEA_100": f"{100 / escala_poder:.2f}",
+        "PODER_FRASE": html.escape(frase_poder(filas, INICIO_IPC)),
+        "PODER_NOTA": html.escape(nota_bono_poder(filas, bonos or {})),
+        "PODER_TABLA": tabla_poder_html(filas),
+        "PODER_MES_PESOS": nombre_mes(_ultimo_real(filas, "smvm")["periodo"]),
+        "POBREZA_FRASE": html.escape(frase_pobreza(semestres)),
+        "POBREZA_TABLA": tabla_pobreza_html(semestres),
+        "POBREZA_NOTAS": notas_pobreza(semestres),
+        "TRABAJO_FRASE": html.escape(frase_trabajo(trimestres)),
+        "TRABAJO_ANCHO": f"{trabajo['informalidad']:.1f}",
+        "DATOS_SOCIALES": sociales_json,
     }
     resultado = plantilla
     for clave, valor in reemplazos.items():
@@ -427,6 +770,9 @@ def ejecutar(raiz: Path, salida: Path) -> list[str]:
     correcciones = leer_csv_local(raiz / "datos" / "correcciones.csv")
     aplicar_correcciones(series, correcciones)
     alertas = descartar_caidas_ripte(series["ripte"])
+    series["ipc"] = interpretar_ipc(bajar_ipc(token))
+    semestres = interpretar_pobreza(_bajar_api(API_POBREZA, {"order": "periodo"}, token))
+    trimestres = interpretar_trabajo(_bajar_api(API_TRABAJO, {"order": "periodo"}, token))
     filas_bono = leer_csv_local(raiz / "datos" / "bonos.csv")
     bonos = {f["periodo"]: float(f["monto"]) for f in filas_bono}
 
@@ -438,7 +784,9 @@ def ejecutar(raiz: Path, salida: Path) -> list[str]:
     actualizado = datetime.now(ZONA_ARGENTINA)
     plantilla = (raiz / "sitio" / "plantilla.html").read_text(encoding="utf-8")
     fuente_bono = max(filas_bono, key=lambda f: f["periodo"])["fuente"]
-    pagina = armar_sitio(plantilla, filas, barras, bono, correcciones, actualizado, fuente_bono)
+    pagina = armar_sitio(
+        plantilla, filas, barras, bono, correcciones, actualizado, semestres, trimestres, bonos, fuente_bono
+    )
 
     # Se arma aparte y se reemplaza al final: si algo falla, la salida anterior queda intacta.
     salida.parent.mkdir(parents=True, exist_ok=True)
@@ -447,6 +795,7 @@ def ejecutar(raiz: Path, salida: Path) -> list[str]:
         (temporal / "datos").mkdir()
         (temporal / "index.html").write_text(pagina, encoding="utf-8")
         escribir_csv(temporal / "datos" / "indicadores.csv", filas)
+        escribir_csv_sociales(temporal / "datos", semestres, trimestres)
         (temporal / "datos" / "indicadores.json").write_text(
             json.dumps(
                 {
@@ -454,10 +803,15 @@ def ejecutar(raiz: Path, salida: Path) -> list[str]:
                     "fuentes": {
                         "canasta": API_INDEC,
                         **{nombre: url for nombre, (url, _) in SERIES_ABIERTAS.items()},
+                        "ipc": API_IPC,
+                        "pobreza": API_POBREZA,
+                        "trabajo": API_TRABAJO,
                     },
                     "correcciones": correcciones,
                     "bonos": bonos,
                     "meses": filas,
+                    "pobreza": semestres,
+                    "trabajo": trimestres,
                 },
                 ensure_ascii=False,
                 indent=1,

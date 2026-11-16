@@ -19,6 +19,7 @@
   --verde:#0B5A49; --verde-osc:#07382E; --menta:#9BE8CC; --menta-suave:#D8F5EA;
   --tinta:#10211D; --tinta-2:#46574F; --linea:#D9E2DD; --fondo:#FFFFFF; --fondo-2:#F2F6F4;
   --gutter:clamp(16px,4vw,64px);
+  --banda:#FFFFFF;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth;scrollbar-color:var(--verde) var(--fondo-2)}
@@ -74,7 +75,8 @@ th,td{padding:8px 12px;border-bottom:1px solid var(--linea);text-align:right;whi
 th:first-child,td:first-child{text-align:left}
 thead th{position:sticky;top:0;background:var(--fondo-2);font-weight:600}
 
-.cubre{background:var(--fondo-2)}
+.banda-gris{background:var(--fondo-2);--banda:var(--fondo-2)}
+.comparacion{--rotulo:"100%"}
 .leyenda{display:flex;flex-wrap:wrap;gap:8px 20px;margin-top:20px;font-size:15px}
 .ley{display:inline-flex;align-items:center;gap:8px}
 .ley .seg{display:inline-block;width:18px;height:12px;border-radius:2px}
@@ -86,13 +88,21 @@ thead th{position:sticky;top:0;background:var(--fondo-2);font-weight:600}
 .b-nombre b{display:block;font-weight:700}
 .b-nombre span{font-size:14px;color:var(--tinta-2);display:block;line-height:1.35}
 .b-pista{position:relative;height:40px}
-.barras::after{content:"";position:absolute;left:calc(328px + (100% - 328px)*{{LINEA_100}}/100);top:-4px;bottom:-4px;width:2px;background:var(--tinta);box-shadow:0 0 0 1px var(--fondo-2)}
+.barras::after{content:"";position:absolute;left:calc(328px + (100% - 328px)*var(--l100)/100);top:-4px;bottom:-4px;width:2px;background:var(--tinta);box-shadow:0 0 0 1px var(--banda)}
 .b-marcas{display:flex;align-items:center;gap:2px;height:100%}
 .b-marcas .seg:first-child{border-radius:0}
 .b-marcas .seg:nth-last-child(2){border-radius:0 4px 4px 0}
-.b-num{margin-left:6px;font-size:16px;font-weight:700;background:var(--fondo-2);padding:2px 5px;position:relative;z-index:1}
+.b-num{margin-left:6px;font-size:16px;font-weight:700;background:var(--banda);padding:2px 5px;position:relative;z-index:1}
 .marca-100{position:relative;height:22px;margin-left:calc(300px + 28px);font-size:14px;font-weight:600;margin-top:24px}
-.marca-100 span{position:absolute;left:{{LINEA_100}}%;transform:translateX(-50%);white-space:nowrap}
+.marca-100 span{position:absolute;left:calc(var(--l100)*1%);transform:translateX(-50%);white-space:nowrap}
+
+.frase{font-size:clamp(18px,1.6vw,21px);line-height:1.4;font-weight:500;max-width:62ch;margin-top:18px}
+.sub{margin-top:clamp(40px,5vw,64px)}
+.sub h3{font-size:26px}
+.parte{margin-top:20px;max-width:760px}
+.parte-pista{height:40px;background:var(--linea);border-radius:0 4px 4px 0;overflow:hidden}
+.parte-pista span{display:block;height:100%;background:var(--verde);border-radius:0 4px 4px 0}
+.parte-ejes{display:flex;justify-content:space-between;font-size:14px;color:var(--tinta-2);margin-top:6px}
 
 .citar{display:grid;grid-template-columns:minmax(0,3fr) minmax(0,2fr);gap:clamp(30px,5vw,72px)}
 .campo{display:block;margin-top:20px;font-weight:600;font-size:15px}
@@ -117,8 +127,8 @@ footer{background:var(--verde-osc);color:var(--menta-suave);font-size:15px;paddi
   .b-fila{grid-template-columns:1fr}
   .barras::after,.marca-100{display:none}
   .barras{margin-top:26px;gap:22px}
-  .b-pista::after{content:"";position:absolute;left:{{LINEA_100}}%;top:-7px;bottom:-7px;width:2px;background:var(--tinta);box-shadow:0 0 0 1px var(--fondo-2)}
-  .b-pista::before{content:"100%";position:absolute;left:{{LINEA_100}}%;top:-26px;transform:translateX(-50%);font-size:13px;font-weight:600}
+  .b-pista::after{content:"";position:absolute;left:calc(var(--l100)*1%);top:-7px;bottom:-7px;width:2px;background:var(--tinta);box-shadow:0 0 0 1px var(--banda)}
+  .b-pista::before{content:var(--rotulo);position:absolute;left:calc(var(--l100)*1%);top:-26px;transform:translateX(-50%);font-size:13px;font-weight:600}
   .controles .selector{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:2px}
   .controles .selector button{padding:8px 6px;line-height:1.2;font-size:14px}
   .citar{grid-template-columns:1fr}
@@ -136,7 +146,7 @@ footer{background:var(--verde-osc);color:var(--menta-suave);font-size:15px;paddi
   <div class="envoltura">
     <div class="barra">
       <div class="marca">Monitor del bolsillo</div>
-      <nav aria-label="Secciones"><a href="#historia">Historia</a><a href="#ingresos">Ingresos</a><a href="#citar">Citar</a><a href="#metodo">Metodología</a></nav>
+      <nav aria-label="Secciones"><a href="#historia">Historia</a><a href="#ingresos">Ingresos</a><a href="#poder">Poder de compra</a><a href="#pobreza">Pobreza</a><a href="#citar">Citar</a><a href="#metodo">Metodología</a></nav>
     </div>
     <h1>Una familia de&nbsp;4 necesita {{SALARIOS_REDONDO}}&nbsp;salarios mínimos para no ser pobre</h1>
     <p class="bajada">Gran Buenos Aires, {{MES}}. Cada cuadro de abajo es un salario mínimo bruto de {{SALARIO_MINIMO}}.</p>
@@ -180,14 +190,103 @@ footer{background:var(--verde-osc);color:var(--menta-suave);font-size:15px;paddi
     </div>
   </section>
 
-  <section class="cubre" id="ingresos">
+  <section class="banda-gris" id="ingresos">
     <div class="envoltura">
       <h2>Qué parte de la canasta cubre cada ingreso</h2>
       <p class="intro">Cada barra compara un ingreso con la canasta total del hogar indicado, en el Gran Buenos Aires. Los salarios están en bruto. La línea marca el punto en que alcanza justo.</p>
-      <div class="leyenda">{{LEYENDA}}</div>
-      <div class="marca-100" aria-hidden="true"><span>100% de la canasta</span></div>
-      <div class="barras">{{BARRAS}}</div>
+      <div class="comparacion" style="--l100:{{LINEA_100}}">
+        <div class="leyenda">{{LEYENDA}}</div>
+        <div class="marca-100" aria-hidden="true"><span>100% de la canasta</span></div>
+        <div class="barras">{{BARRAS}}</div>
+      </div>
       <p class="nota">Con la mínima, una persona sola puede superar la línea porque la canasta se ajusta según las calorías que necesita cada edad y sexo: no contempla remedios, alquiler ni vivir solo. {{NOTA_CORRECCION}} La jubilación se toma tal como la publica ANSES, sin descontar nada. Fuentes: INDEC, Secretaría de Trabajo y ANSES; el bono, según notas de prensa, sin confirmar en el Boletín Oficial.</p>
+    </div>
+  </section>
+
+  <section id="poder">
+    <div class="envoltura">
+      <h2>Cuánto compra hoy cada ingreso</h2>
+      <p class="intro">Cada barra compara lo que compra un ingreso en su último mes con lo que compraba en el mes que elijas, después de descontar la suba de precios. La línea marca que compra lo mismo.</p>
+      <label class="campo" for="poder-base">Comparar con
+        <select id="poder-base"></select>
+      </label>
+      <p class="frase" id="poder-frase" aria-live="polite">{{PODER_FRASE}}</p>
+      <div class="comparacion" id="poder-comparacion" style="--l100:{{PODER_LINEA_100}};--rotulo:'Lo mismo'">
+        <div class="marca-100" aria-hidden="true"><span>Compra lo mismo</span></div>
+        <div class="barras" id="poder-barras">{{PODER_BARRAS}}</div>
+      </div>
+      <p class="nota">{{PODER_NOTA}} La suba de precios es la del índice de precios al consumidor del INDEC para el Gran Buenos Aires, que empieza en diciembre de 2016. El RIPTE es un promedio de todo el país. Fuentes: INDEC, Secretaría de Trabajo y ANSES.</p>
+
+      <div class="sub">
+        <div class="grafico-cabeza">
+          <div>
+            <h3>Mes por mes</h3>
+            <p class="intro" id="poder-intro">Lo que compra el salario mínimo cada mes, frente a lo que compraba en diciembre de 2016.</p>
+          </div>
+          <div class="controles">
+            <div class="selector" role="group" aria-label="Ingreso del gráfico de poder de compra">
+              <button type="button" aria-pressed="true" data-poder="smvm">Salario mínimo</button>
+              <button type="button" aria-pressed="false" data-poder="ripte">Sueldo registrado</button>
+              <button type="button" aria-pressed="false" data-poder="haber">Jubilación mínima</button>
+            </div>
+          </div>
+        </div>
+        <div class="lienzo" id="lienzo-poder"><div class="tip"></div></div>
+        <p class="sr" id="anuncio-poder" role="status" aria-live="polite"></p>
+        <p class="nota">La línea marca lo que compraba el ingreso en el mes elegido arriba. Tocá o pasá por el gráfico para ver cada mes; con el teclado, usá las flechas.</p>
+        <details>
+          <summary>Ver todos los meses como tabla</summary>
+          <p class="nota" id="poder-tabla-nota">Cada ingreso en pesos de {{PODER_MES_PESOS}}: lo que valía ese mes, llevado a precios de hoy con el índice de precios del Gran Buenos Aires.</p>
+          <div class="tabla-caja" tabindex="0" role="region" aria-labelledby="poder-tabla-nota">
+            <table>
+              <thead><tr><th scope="col">Mes</th><th scope="col">Índice de precios (dic. 2016 = 100)</th><th scope="col">Salario mínimo</th><th scope="col">Jubilación mínima</th><th scope="col">RIPTE</th></tr></thead>
+              <tbody>{{PODER_TABLA}}</tbody>
+            </table>
+          </div>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <section class="banda-gris" id="pobreza">
+    <div class="envoltura">
+      <div class="grafico-cabeza">
+        <div>
+          <h2>Cuántas personas no llegan a la canasta</h2>
+          <p class="intro">Una persona es pobre si el ingreso de su hogar no alcanza la canasta total, e indigente si no alcanza la de alimentos. El INDEC lo mide por semestre en 31 aglomerados urbanos de todo el país, con la canasta de cada región.</p>
+          <p class="frase">{{POBREZA_FRASE}}</p>
+        </div>
+        <div class="controles">
+          <div class="selector" role="group" aria-label="Serie del gráfico de pobreza">
+            <button type="button" aria-pressed="true" data-pobreza="pobreza">Pobreza</button>
+            <button type="button" aria-pressed="false" data-pobreza="indigencia">Indigencia</button>
+          </div>
+        </div>
+      </div>
+      <div class="lienzo" id="lienzo-pobreza"><div class="tip"></div></div>
+      <p class="sr" id="anuncio-pobreza" role="status" aria-live="polite"></p>
+      <p class="nota">Porcentaje de personas en 31 aglomerados urbanos. {{POBREZA_NOTAS}} Fuente: INDEC, Encuesta Permanente de Hogares. Tocá o pasá por el gráfico para ver cada semestre; con el teclado, usá las flechas.</p>
+      <details>
+        <summary>Ver todos los semestres como tabla</summary>
+        <div class="tabla-caja" tabindex="0" role="region" aria-label="Pobreza e indigencia por semestre">
+          <table>
+            <thead><tr><th scope="col">Semestre</th><th scope="col">Pobreza</th><th scope="col">Indigencia</th><th scope="col">Aclaración del INDEC</th></tr></thead>
+            <tbody>{{POBREZA_TABLA}}</tbody>
+          </table>
+        </div>
+      </details>
+
+      <div class="sub">
+        <h3>Cuánto empleo es informal</h3>
+        <p class="frase">{{TRABAJO_FRASE}}</p>
+        <div class="parte">
+          <div class="parte-pista" role="img" aria-label="{{TRABAJO_FRASE}}"><span style="width:{{TRABAJO_ANCHO}}%"></span></div>
+          <div class="parte-ejes" aria-hidden="true"><span>Empleo informal</span><span>100 personas ocupadas</span></div>
+        </div>
+        <p class="nota">El sueldo promedio registrado de esta página mide solo el empleo registrado: no dice cuánto cobra el empleo informal. La informalidad se publica desde el cuarto trimestre de 2023; las 100 personas son un cálculo propio con las tasas de empleo de la misma encuesta. Fuente: INDEC, Encuesta Permanente de Hogares.</p>
+        <a class="boton sec" href="datos/pobreza.csv" download>Descargar pobreza</a>
+        <a class="boton sec" href="datos/trabajo.csv" download>Descargar trabajo</a>
+      </div>
     </div>
   </section>
 
@@ -210,6 +309,8 @@ footer{background:var(--verde-osc);color:var(--menta-suave);font-size:15px;paddi
           <li>No se suman asignaciones familiares ni otras ayudas al ingreso del hogar.</li>
           <li>El RIPTE incluye solo a personas registradas y estables, y su fuente aclara que no mide la evolución de los salarios.</li>
           <li>El bono de jubilados se muestra solo en el último mes disponible.</li>
+          <li>El poder de compra se puede medir desde diciembre de 2016, el primer mes del índice de precios actual.</li>
+          <li>La pobreza y el empleo se miden en 31 aglomerados urbanos de todo el país, no solo en el Gran Buenos Aires.</li>
         </ul>
       </div>
     </div>
@@ -224,9 +325,18 @@ footer{background:var(--verde-osc);color:var(--menta-suave);font-size:15px;paddi
           <p>Se divide la canasta del hogar por el ingreso del mismo mes. La familia de 4 es el hogar tipo del INDEC: varón de 35, mujer de 31, hijo de 6 e hija de 8, equivalentes a 3,09 adultos. Para jubilados se usan 0,83 (varón) y 0,67 (mujer) de la tabla oficial, para edades de 61 a 75 años.</p>
         </div>
         <div>
+          <h3>Lo que compra cada ingreso</h3>
+          <p>Cada ingreso se divide por el índice de precios al consumidor del Gran Buenos Aires de su mismo mes, y el resultado se compara con el del mes elegido. Los salarios mínimos necesarios cambian por dos motivos: cuánto sube la canasta frente al resto de los precios y cuánto compra el salario. Si la canasta sube casi lo mismo que los precios, todo el cambio viene del salario.</p>
+        </div>
+        <div>
+          <h3>Pobreza y empleo</h3>
+          <p>Los porcentajes de pobreza, indigencia y desocupación son los que publica el INDEC con la Encuesta Permanente de Hogares. Para el empleo informal, la página divide la tasa de empleo informal por la tasa de empleo, las dos sobre la población total, y lo expresa en personas cada 100 ocupadas.</p>
+        </div>
+        <div>
           <h3>Las fuentes</h3>
           <ul>
             <li><a href="https://api.indec.gob.ar/docs">Canastas básicas: API del INDEC</a></li>
+            <li><a href="https://api.indec.gob.ar/docs">Índice de precios, pobreza y empleo: API del INDEC</a></li>
             <li><a href="https://www.indec.gob.ar/ftp/cuadros/sociedad/EPH_metodologia_22_pobreza.pdf">Adultos equivalentes: Metodología 22 del INDEC</a></li>
             <li><a href="https://datos.gob.ar/dataset/sspm-salario-minimo-vital-movil-pesos-corrientes">Salario mínimo: Secretaría de Trabajo</a></li>
             <li><a href="https://datos.gob.ar/dataset/sspm-haber-minimo-jubilatorio">Jubilación mínima: ANSES</a></li>
@@ -242,79 +352,92 @@ footer{background:var(--verde-osc);color:var(--menta-suave);font-size:15px;paddi
 <footer><div class="envoltura">Actualizado el {{ACTUALIZADO}}. Página no partidista: muestra datos y sus límites.</div></footer>
 
 <script id="datos" type="application/json">{{DATOS_JSON}}</script>
+<script id="datos-sociales" type="application/json">{{DATOS_SOCIALES}}</script>
 <script>
 (function(){
   const datos=JSON.parse(document.getElementById('datos').textContent);
+  const sociales=JSON.parse(document.getElementById('datos-sociales').textContent);
   const MES=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
   const CORTO=MES.map(m=>m.slice(0,3));
   const coma=(v,d=2)=>v.toLocaleString('es-AR',{minimumFractionDigits:d,maximumFractionDigits:d});
   const pesos=v=>'$'+Math.round(v).toLocaleString('es-AR');
+  const pct=v=>coma(v*100,0)+'%';
   const mesDe=p=>({a:+p.slice(0,4),m:+p.slice(5)-1});
   const nombreMes=p=>{const f=mesDe(p);return MES[f.m]+' de '+f.a};
   const corto=p=>{const f=mesDe(p);return CORTO[f.m]+' '+f.a};
-  const INGRESOS={
-    smvm:{unidad:'salarios mínimos',necesarios:'necesarios',quien:'una familia de 4',nota:'Salario mínimo en bruto. Fuentes: INDEC y Secretaría de Trabajo.'},
-    ripte:{unidad:'sueldos promedio registrados',necesarios:'necesarios',quien:'una familia de 4',nota:'RIPTE en bruto, solo personas registradas y estables; su fuente aclara que no mide la evolución de los salarios. Fuentes: INDEC y Secretaría de Trabajo.'},
-    haber:{unidad:'jubilaciones mínimas',necesarios:'necesarias',quien:'una pareja de jubilados',nota:'Jubilación sin bono, pareja de 61 a 75 años. En varios períodos hubo bonos que esta serie no incluye, así que el ingreso real de esos meses fue mayor. Fuentes: INDEC y ANSES.'}
-  };
-  const CANASTAS={cbt:'no sea pobre',cba:'no sea indigente'};
-  const estado={ingreso:'smvm',canasta:'cbt',foco:null};
-  const lienzo=document.getElementById('lienzo'),tip=document.getElementById('tip');
-  const intro=document.getElementById('grafico-intro'),nota=document.getElementById('grafico-nota'),anuncio=document.getElementById('anuncio');
+  const nombreSemestre=p=>(p.slice(-1)==='1'?'primer':'segundo')+' semestre de '+p.slice(0,4);
+  const cortoSemestre=p=>(p.slice(-1)==='1'?'1.er':'2.º')+' sem. '+p.slice(0,4);
+  const aniosMes=lista=>lista.map((d,i)=>({i,a:+d.p.slice(0,4),ok:d.p.slice(5)==='01'})).filter(d=>d.ok);
+  const PASOS=[.5,1,2,5,10,20,25,50,100,200,500];
 
-  function dibujar(){
+  // Dibuja una serie por vez, con rótulos directos y exploración por puntero o teclado.
+  function grafico(op){
+    const lienzo=op.lienzo,tip=lienzo.querySelector('.tip'),anuncio=op.anuncio;
     const anterior=lienzo.querySelector('svg');if(anterior)anterior.remove();
-    const clave=estado.ingreso+'_'+estado.canasta;
-    const serie=datos.map((d,i)=>({p:d.p,v:d[clave],i})).filter(d=>d.v!=null);
-    const info=INGRESOS[estado.ingreso];
-    intro.textContent=info.unidad.charAt(0).toUpperCase()+info.unidad.slice(1)+' '+info.necesarios+' para que '+info.quien+' '+CANASTAS[estado.canasta]+', mes por mes.';
+    const serie=op.puntos,n=op.total-1;
     const W=lienzo.clientWidth,chico=W<600,H=Math.max(290,Math.min(430,W*.36));
-    const m={t:26,r:chico?46:68,b:30,l:34};
-    const tope=Math.max.apply(null,serie.map(d=>d.v));
-    const paso=tope>6?2:tope>3?1:.5;
+    const m={t:26,r:(chico?46:68)+(op.der||0),b:30,l:op.izq||34};
+    // Sin ancho todavía (pestaña oculta o en carga): se dibuja en el próximo cambio de tamaño.
+    if(W<=m.l+m.r)return;
+    const tope=Math.max.apply(null,serie.map(d=>d.v).concat(op.referencia||0));
+    const paso=PASOS.find(p=>tope/p<=6)||1000;
     const ymax=Math.ceil(tope/paso)*paso;
-    const n=datos.length-1;
     const x=i=>m.l+i/n*(W-m.l-m.r);
     const y=v=>m.t+(1-v/ymax)*(H-m.t-m.b);
     const ultimo=serie[serie.length-1];
-    let s='<svg viewBox="0 0 '+W+' '+H+'" height="'+H+'" role="img" tabindex="0" aria-label="'+info.unidad+' '+info.necesarios+' por mes. Último dato: '+coma(ultimo.v)+' en '+nombreMes(ultimo.p)+'. Los valores de cada mes están en la tabla.">';
+    let s='<svg viewBox="0 0 '+W+' '+H+'" height="'+H+'" role="img" tabindex="0" aria-label="'+op.aria(ultimo)+'">';
     for(let v=0;v<=ymax+1e-9;v+=paso){
       s+='<line x1="'+m.l+'" x2="'+(W-m.r)+'" y1="'+y(v)+'" y2="'+y(v)+'" stroke="'+(v?'#E6ECE9':'#10211D')+'"/>';
-      s+='<text x="0" y="'+(y(v)+5)+'" font-size="14" fill="#46574F">'+coma(v,paso<1?1:0)+'</text>';
+      s+='<text x="0" y="'+(y(v)+5)+'" font-size="14" fill="#46574F">'+op.eje(v,paso)+'</text>';
     }
     const salto=chico?3:1;
-    for(let a=2017;a<=mesDe(datos[n].p).a;a+=salto){
-      const i=datos.findIndex(d=>d.p===a+'-01');
-      if(i>=0)s+='<text x="'+x(i)+'" y="'+(H-8)+'" font-size="14" fill="#46574F" text-anchor="middle">'+a+'</text>';
-    }
+    op.anios.forEach((a,k)=>{
+      if(k%salto===0)s+='<text x="'+x(a.i)+'" y="'+(H-8)+'" font-size="14" fill="#46574F" text-anchor="middle">'+a.a+'</text>';
+    });
     const pts=serie.map(d=>x(d.i).toFixed(1)+','+y(d.v).toFixed(1)).join(' ');
     s+='<polygon points="'+x(serie[0].i)+','+y(0)+' '+pts+' '+x(ultimo.i)+','+y(0)+'" fill="#D8F5EA"/>';
+    if(op.referencia!=null){
+      s+='<line x1="'+m.l+'" x2="'+(W-m.r)+'" y1="'+y(op.referencia)+'" y2="'+y(op.referencia)+'" stroke="#10211D" stroke-width="2"/>';
+    }
     s+='<polyline points="'+pts+'" fill="none" stroke="#0B5A49" stroke-width="2.5" stroke-linejoin="round"/>';
+    if(op.referencia!=null){
+      // El rótulo va en el extremo donde la serie queda más lejos de la línea. Si entre la línea y la
+      // serie hay lugar, va ahí; si no, del otro lado. Así no choca con los rótulos de máximo y mínimo.
+      const ref=op.referencia,k=Math.max(1,Math.round(serie.length*.15));
+      const distancia=tramo=>Math.min.apply(null,tramo.map(d=>Math.abs(d.v-ref)));
+      const alFinal=distancia(serie.slice(-k))>=distancia(serie.slice(0,k));
+      const tramo=alFinal?serie.slice(-k):serie.slice(0,k);
+      const serieDebajo=tramo.reduce((a,d)=>a+d.v,0)/tramo.length<ref;
+      const hayLugar=Math.abs(y(ref)-y(ref+(serieDebajo?-1:1)*distancia(tramo)))>=30;
+      const rotuloDebajo=hayLugar?serieDebajo:!serieDebajo;
+      s+='<text x="'+(alFinal?W-m.r-8:m.l+8)+'" y="'+(y(ref)+(rotuloDebajo?20:-8))+'" text-anchor="'+(alFinal?'end':'start')+'" font-size="14" font-weight="600" fill="#10211D" stroke="#fff" stroke-width="3" paint-order="stroke">'+op.refTexto+'</text>';
+    }
     let alto=serie[0],bajo=serie[0];
     serie.forEach(d=>{if(d.v>alto.v)alto=d;if(d.v<bajo.v)bajo=d});
     [[alto,-10],[bajo,20]].forEach(par=>{
       const d=par[0];
-      if(ultimo.i-d.i<7)return;
+      if(ultimo.i-d.i<(op.cerca||7))return;
       const ancla=d.i>n*.75?'end':d.i<n*.2?'start':'middle';
       s+='<circle cx="'+x(d.i)+'" cy="'+y(d.v)+'" r="4" fill="#0B5A49" stroke="#fff" stroke-width="2"/>';
-      s+='<text x="'+x(d.i)+'" y="'+(y(d.v)+par[1])+'" font-size="14" font-weight="600" fill="#10211D" text-anchor="'+ancla+'" stroke="#fff" stroke-width="3" paint-order="stroke">'+coma(d.v,1)+' en '+corto(d.p)+'</text>';
+      s+='<text x="'+x(d.i)+'" y="'+(y(d.v)+par[1])+'" font-size="14" font-weight="600" fill="#10211D" text-anchor="'+ancla+'" stroke="#fff" stroke-width="3" paint-order="stroke">'+op.rotulo(d.v)+' en '+op.corto(d)+'</text>';
     });
     s+='<circle cx="'+x(ultimo.i)+'" cy="'+y(ultimo.v)+'" r="5" fill="#0B5A49" stroke="#fff" stroke-width="2"/>';
-    s+='<text x="'+(x(ultimo.i)+10)+'" y="'+(y(ultimo.v)+7)+'" font-size="20" font-weight="700" fill="#10211D">'+coma(ultimo.v,1)+'</text>';
+    s+='<text x="'+(x(ultimo.i)+10)+'" y="'+(y(ultimo.v)+7)+'" font-size="20" font-weight="700" fill="#10211D">'+op.rotulo(ultimo.v)+'</text>';
     s+='<line class="cruz" y1="'+m.t+'" y2="'+y(0)+'" stroke="#10211D" stroke-width="1" opacity="0"/>';
     s+='<circle class="punto" r="5" fill="#10211D" stroke="#fff" stroke-width="2" opacity="0"/>';
     s+='<rect class="zona" x="'+m.l+'" y="0" width="'+(W-m.l-m.r)+'" height="'+H+'" fill="transparent"/></svg>';
     lienzo.insertAdjacentHTML('afterbegin',s);
     const svg=lienzo.querySelector('svg'),zona=svg.querySelector('.zona'),cruz=svg.querySelector('.cruz'),punto=svg.querySelector('.punto');
+    let foco=null;
     function mostrar(indice){
-      const d=serie[indice];estado.foco=indice;
+      const d=serie[indice];foco=indice;
       const X=x(d.i),Y=y(d.v);
       cruz.setAttribute('x1',X);cruz.setAttribute('x2',X);cruz.setAttribute('opacity','.5');
       punto.setAttribute('cx',X);punto.setAttribute('cy',Y);punto.setAttribute('opacity','1');
-      tip.innerHTML=nombreMes(d.p)+'<b>'+coma(d.v)+'</b>';
+      tip.innerHTML=op.nombre(d)+'<b>'+op.tip(d.v)+'</b>';
       tip.style.left=Math.max(80,Math.min(W-80,X))+'px';tip.style.top=Math.max(50,Y)+'px';tip.style.opacity=1;
     }
-    function ocultar(){tip.style.opacity=0;cruz.setAttribute('opacity','0');punto.setAttribute('opacity','0');estado.foco=null}
+    function ocultar(){tip.style.opacity=0;cruz.setAttribute('opacity','0');punto.setAttribute('opacity','0');foco=null}
     function desdeEvento(e){
       const r=lienzo.getBoundingClientRect();
       const i=Math.round((e.clientX-r.left-m.l)/(W-m.l-m.r)*n);
@@ -328,26 +451,117 @@ footer{background:var(--verde-osc);color:var(--menta-suave);font-size:15px;paddi
       const pasos={ArrowLeft:-1,ArrowRight:1,PageUp:-12,PageDown:12};
       if(!(e.key in pasos))return;
       e.preventDefault();
-      const base=estado.foco==null?serie.length-1:estado.foco;
+      const base=foco==null?serie.length-1:foco;
       const elegido=Math.max(0,Math.min(serie.length-1,base+pasos[e.key]));
       mostrar(elegido);
-      anuncio.textContent=nombreMes(serie[elegido].p)+': '+coma(serie[elegido].v)+' '+info.unidad+'.';
+      anuncio.textContent=op.nombre(serie[elegido])+': '+op.tip(serie[elegido].v)+' '+op.unidad+'.';
     });
     svg.addEventListener('blur',ocultar);
-    const primero=serie[0];
-    nota.textContent='Gran Buenos Aires, de '+nombreMes(primero.p)+' a '+nombreMes(ultimo.p)+'. '+info.nota+' Tocá o pasá por el gráfico para ver cada mes; con el teclado, usá las flechas.';
   }
 
-  document.querySelectorAll('.selector button').forEach(b=>b.addEventListener('click',()=>{
-    const grupo=b.dataset.ingreso?'ingreso':'canasta';
-    estado[grupo]=b.dataset[grupo];
-    b.parentElement.querySelectorAll('button').forEach(o=>o.setAttribute('aria-pressed',String(o===b)));
-    dibujar();
-    anuncio.textContent=intro.textContent;
-  }));
-  let espera;addEventListener('resize',()=>{clearTimeout(espera);espera=setTimeout(dibujar,120)});
-  dibujar();
-  if(document.fonts&&document.fonts.ready)document.fonts.ready.then(dibujar);
+  function selector(grupo,alElegir){
+    document.querySelectorAll('[data-'+grupo+']').forEach(b=>b.addEventListener('click',()=>{
+      b.parentElement.querySelectorAll('button').forEach(o=>o.setAttribute('aria-pressed',String(o===b)));
+      alElegir(b.dataset[grupo]);
+    }));
+  }
+
+  // Historia: ingresos necesarios para pagar la canasta.
+  const INGRESOS={
+    smvm:{unidad:'salarios mínimos',necesarios:'necesarios',quien:'una familia de 4',nota:'Salario mínimo en bruto. Fuentes: INDEC y Secretaría de Trabajo.'},
+    ripte:{unidad:'sueldos promedio registrados',necesarios:'necesarios',quien:'una familia de 4',nota:'RIPTE en bruto, solo personas registradas y estables; su fuente aclara que no mide la evolución de los salarios. Fuentes: INDEC y Secretaría de Trabajo.'},
+    haber:{unidad:'jubilaciones mínimas',necesarios:'necesarias',quien:'una pareja de jubilados',nota:'Jubilación sin bono, pareja de 61 a 75 años. En varios períodos hubo bonos que esta serie no incluye, así que el ingreso real de esos meses fue mayor. Fuentes: INDEC y ANSES.'}
+  };
+  const CANASTAS={cbt:'no sea pobre',cba:'no sea indigente'};
+  const estado={ingreso:'smvm',canasta:'cbt'};
+  const intro=document.getElementById('grafico-intro'),nota=document.getElementById('grafico-nota'),anuncio=document.getElementById('anuncio');
+  function historia(){
+    const clave=estado.ingreso+'_'+estado.canasta,info=INGRESOS[estado.ingreso];
+    intro.textContent=info.unidad.charAt(0).toUpperCase()+info.unidad.slice(1)+' '+info.necesarios+' para que '+info.quien+' '+CANASTAS[estado.canasta]+', mes por mes.';
+    const puntos=datos.map((d,i)=>({i,p:d.p,v:d[clave]})).filter(d=>d.v!=null);
+    grafico({
+      lienzo:document.getElementById('lienzo'),anuncio,total:datos.length,puntos,anios:aniosMes(datos),
+      nombre:d=>nombreMes(d.p),corto:d=>corto(d.p),tip:v=>coma(v),rotulo:v=>coma(v,1),
+      eje:(v,paso)=>coma(v,paso<1?1:0),unidad:info.unidad,
+      aria:u=>info.unidad+' '+info.necesarios+' por mes. Último dato: '+coma(u.v)+' en '+nombreMes(u.p)+'. Los valores de cada mes están en la tabla.'
+    });
+    nota.textContent='Gran Buenos Aires, de '+nombreMes(puntos[0].p)+' a '+nombreMes(puntos[puntos.length-1].p)+'. '+info.nota+' Tocá o pasá por el gráfico para ver cada mes; con el teclado, usá las flechas.';
+  }
+  selector('ingreso',v=>{estado.ingreso=v;historia();anuncio.textContent=intro.textContent});
+  selector('canasta',v=>{estado.canasta=v;historia();anuncio.textContent=intro.textContent});
+
+  // Poder de compra: cada ingreso dividido por el índice de precios, frente al mes elegido.
+  const PODER=[['smvm','Salario mínimo','Bruto'],['haber','Jubilación mínima','Sin bono'],['ripte','Sueldo promedio registrado','RIPTE, bruto']];
+  const QUIEN={smvm:'el salario mínimo',haber:'la jubilación mínima, sin bono,',ripte:'el sueldo promedio registrado'};
+  const ultimoReal=c=>{for(let k=datos.length-1;k>=0;k--){const d=datos[k];if(d[c]&&d.ipc)return d}};
+  const real=(d,c)=>d[c]/d.ipc;
+  const variacion=(f,pl)=>f>=2?(pl?'se multiplicaron':'se multiplicó')+' por '+coma(f,f>=10?0:1):f>=1?(pl?'subieron ':'subió ')+pct(f-1):(pl?'bajaron ':'bajó ')+pct(1-f);
+  function frasePoder(b){
+    const u=ultimoReal('smvm');
+    const canasta=u.cbt_ad/b.cbt_ad,precios=u.ipc/b.ipc,salario=real(u,'smvm')/real(b,'smvm'),r=canasta/precios;
+    const t='Entre '+nombreMes(b.p)+' y '+nombreMes(u.p)+', los salarios mínimos necesarios para que una familia de 4 no sea pobre pasaron de '+coma(b.smvm_cbt)+' a '+coma(u.smvm_cbt)+'. La canasta total '+variacion(canasta);
+    if(Math.abs(r-1)<.05)return t+', casi lo mismo que los precios en general, que '+variacion(precios,true)+'. Por eso el cambio viene de lo que compra el salario mínimo, que hoy es el '+pct(salario)+' de lo que compraba entonces.';
+    return t+' y los precios en general '+variacion(precios,true)+': la canasta subió '+(r>1?'más':'menos')+' que el resto. Y el salario mínimo compra hoy el '+pct(salario)+' de lo que compraba entonces.';
+  }
+  const estadoPoder={ingreso:'smvm',base:sociales.bases[0]};
+  const baseSel=document.getElementById('poder-base'),frase=document.getElementById('poder-frase');
+  const comparacion=document.getElementById('poder-comparacion'),barrasPoder=document.getElementById('poder-barras');
+  const introPoder=document.getElementById('poder-intro'),anuncioPoder=document.getElementById('anuncio-poder');
+  sociales.bases.slice().reverse().forEach(p=>{const o=document.createElement('option');o.value=p;o.textContent=nombreMes(p);baseSel.append(o)});
+  baseSel.value=estadoPoder.base;
+  function barrasDePoder(b){
+    const filas=PODER.map(([c,nombre,detalle])=>{const u=ultimoReal(c);return{nombre,detalle:detalle+', '+nombreMes(u.p),v:real(u,c)/real(b,c)}});
+    const escala=Math.max(1.5,Math.max.apply(null,filas.map(f=>f.v))*1.08);
+    comparacion.style.setProperty('--l100',(100/escala).toFixed(2));
+    barrasPoder.innerHTML=filas.map(f=>'<div class="b-fila"><div class="b-nombre"><b>'+f.nombre+'</b><span>'+f.detalle+'</span></div><div class="b-pista"><div class="b-marcas"><span class="seg" style="width:'+(f.v/escala*100).toFixed(2)+'%"></span><b class="b-num">'+pct(f.v)+'</b></div></div></div>').join('');
+  }
+  function poder(){
+    const b=datos.find(d=>d.p===estadoPoder.base),c=estadoPoder.ingreso;
+    barrasDePoder(b);
+    frase.textContent=frasePoder(b);
+    introPoder.textContent='Lo que compra '+QUIEN[c]+' cada mes, frente a lo que compraba en '+nombreMes(b.p)+'.';
+    const meses=datos.filter(d=>d.p>='2016-12'&&d.ipc);
+    const puntos=meses.map((d,i)=>({i,p:d.p,v:d[c]?real(d,c)/real(b,c)*100:null})).filter(d=>d.v!=null);
+    grafico({
+      lienzo:document.getElementById('lienzo-poder'),anuncio:anuncioPoder,total:meses.length,puntos,anios:aniosMes(meses),
+      referencia:100,refTexto:'Lo mismo que en '+corto(b.p),
+      nombre:d=>nombreMes(d.p),corto:d=>corto(d.p),tip:v=>coma(v,0)+'%',rotulo:v=>coma(v,0)+'%',eje:v=>v+'%',
+      izq:44,unidad:'de lo que compraba en '+nombreMes(b.p),
+      aria:u=>'Lo que compra '+QUIEN[c]+' cada mes, como porcentaje de lo que compraba en '+nombreMes(b.p)+'. Último dato: '+coma(u.v,0)+'% en '+nombreMes(u.p)+'. Los valores de cada mes están en la tabla.'
+    });
+  }
+  baseSel.addEventListener('change',()=>{estadoPoder.base=baseSel.value;poder()});
+  selector('poder',v=>{estadoPoder.ingreso=v;poder();anuncioPoder.textContent=introPoder.textContent});
+
+  // Pobreza e indigencia por semestre.
+  const estadoPobreza={serie:'pobreza'};
+  const anuncioPobreza=document.getElementById('anuncio-pobreza');
+  function pobreza(){
+    const lista=sociales.pobreza,serie=estadoPobreza.serie;
+    const puntos=lista.map((s,i)=>({i,p:s.p,v:s[serie],prov:s.provisorio}));
+    grafico({
+      lienzo:document.getElementById('lienzo-pobreza'),anuncio:anuncioPobreza,total:lista.length,puntos,
+      anios:lista.map((s,i)=>({i,a:+s.p.slice(0,4),ok:s.p.slice(-2)==='S1'})).filter(d=>d.ok),
+      nombre:d=>nombreSemestre(d.p)+(d.prov?', provisorio':''),corto:d=>cortoSemestre(d.p),
+      tip:v=>coma(v,1)+'%',rotulo:v=>coma(v,1)+'%',eje:v=>v+'%',izq:40,der:14,cerca:3,
+      unidad:'de las personas',
+      aria:u=>'Porcentaje de personas en situación de '+serie+' por semestre. Último dato: '+coma(u.v,1)+'% en el '+nombreSemestre(u.p)+'. Los valores de cada semestre están en la tabla.'
+    });
+  }
+  selector('pobreza',v=>{estadoPobreza.serie=v;pobreza();anuncioPobreza.textContent=(v==='pobreza'?'Pobreza':'Indigencia')+' por semestre.'});
+
+  function todo(){historia();poder();pobreza()}
+  // Se redibuja solo si cambia el ancho, también cuando la página se abrió en una pestaña oculta.
+  let ancho=document.getElementById('lienzo').clientWidth,espera;
+  const alCambiar=()=>{
+    const w=document.getElementById('lienzo').clientWidth;
+    if(w===ancho)return;
+    ancho=w;clearTimeout(espera);espera=setTimeout(todo,120);
+  };
+  addEventListener('resize',alCambiar);
+  if(window.ResizeObserver)new ResizeObserver(alCambiar).observe(document.body);
+  todo();
+  if(document.fonts&&document.fonts.ready)document.fonts.ready.then(todo);
 
   const select=document.getElementById('mes-cita'),cita=document.getElementById('cita');
   datos.slice().reverse().forEach(d=>{const o=document.createElement('option');o.value=d.p;o.textContent=nombreMes(d.p);select.append(o)});

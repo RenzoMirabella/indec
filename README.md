@@ -19,6 +19,16 @@ Necesita el token de la API del INDEC como variable `INDEC_TOKEN` o en un archiv
 | Jubilación mínima | datos.gob.ar, ANSES |
 | RIPTE | datos.gob.ar, Secretaría de Trabajo |
 | Bono de jubilados | Carga manual en [`datos/bonos.csv`](datos/bonos.csv) |
+| Índice de precios del Gran Buenos Aires | API del INDEC, `ipc_nacional` |
+| Pobreza e indigencia | API del INDEC, `pobreza_eph` |
+| Desocupación y empleo informal | API del INDEC, `mercado_trabajo_eph` |
+
+Además de la canasta medida en ingresos, la página muestra:
+
+- **Poder de compra:** cada ingreso dividido por el índice de precios, comparado con el mes que elija quien lee. Arranca en diciembre de 2016, el primer mes del índice actual. La jubilación va sin bono hasta que estén cargados los bonos anteriores.
+- **Pobreza y empleo:** pobreza e indigencia por semestre y empleo informal por trimestre, en 31 aglomerados urbanos. El empleo informal cada 100 ocupados es un cálculo propio: la tasa de empleo informal dividida por la tasa de empleo.
+
+Los datos se pueden descargar en `datos/indicadores.csv`, `datos/pobreza.csv` y `datos/trabajo.csv`.
 
 **Tareas a mano:**
 

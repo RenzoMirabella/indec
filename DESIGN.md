@@ -313,11 +313,19 @@ Comparan ingresos contra la misma línea.
 - **Fila:** nombre en 700 con el detalle debajo en 14px, y a la derecha una barra de 40px de alto.
 - **Barra:** ingreso en Verde Profundo y, cuando corresponde, bono en Verde Medio. El porcentaje va al final, en 700 a 16px, sobre el fondo de la banda.
 - **Línea del 100%:** 2px en Tinta con su halo y un rótulo en 600 a 14px. Cruza las barras por encima y es la referencia de lectura de toda la pieza.
+- **Reutilización:** el poder de compra usa la misma pieza, con la línea en "compra lo mismo". La posición de la línea va en la variable `--l100` del contenedor `.comparacion` y su rótulo en celular, en `--rotulo`. El fondo del número y el halo toman `--banda`, así la pieza funciona sobre bandas blancas y grises.
+
+### Barra de parte
+Muestra qué parte de un total cumple una condición, como el empleo informal cada 100 ocupados.
+- **Forma:** pista de 40px en Línea con el tramo en Verde Profundo; los dos redondean solo el final, a 4px.
+- **Rótulos:** la frase con el dato arriba, y debajo, a los extremos, qué mide el tramo y qué es el total.
 
 ### Gráfico histórico
 Una serie por vez, dibujada en SVG, con rótulos directos.
 - **Trazo:** línea de 2,5px en Verde Profundo sobre un área Menta Suave; eje base en Tinta y guías horizontales muy pálidas, sin guías verticales.
-- **Rótulos:** el último valor en 700 a 20px al lado de su punto; máximo y mínimo en 600 a 14px con un contorno blanco que los despega del fondo, salvo si están a menos de 7 meses del último dato.
+- **Rótulos:** el último valor en 700 a 20px al lado de su punto; máximo y mínimo en 600 a 14px con un contorno blanco que los despega del fondo, salvo si están a menos de 7 meses del último dato (3 períodos en las series semestrales).
+- **Línea de referencia:** cuando la serie se compara con un mes, una línea de 2px en Tinta marca el 100%. Su rótulo va en el extremo donde la serie queda más lejos, entre la línea y la serie si hay al menos 30px.
+- **Usos:** la misma función dibuja la historia, el poder de compra y la pobreza, siempre una serie por vez.
 - **Exploración:** con puntero, dedo o flechas del teclado, una guía vertical y un punto en Tinta marcan el mes, y la etiqueta flotante muestra su nombre y el valor. Los cambios se anuncian a lectores de pantalla.
 - **Alternativa:** cada gráfico lleva debajo una nota de período y fuentes, y una tabla desplegable con todos los meses.
 
