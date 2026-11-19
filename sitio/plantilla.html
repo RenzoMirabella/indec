@@ -36,7 +36,7 @@ h1,h2,h3{font-family:'Bricolage Grotesque','Libre Franklin',sans-serif;font-weig
 .heroe{background:var(--verde);color:#fff}
 .barra{display:flex;justify-content:space-between;align-items:center;gap:8px 20px;padding-block:20px;font-weight:600;flex-wrap:wrap}
 .marca{font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:22px;letter-spacing:-.01em}
-.barra nav{display:flex;gap:22px;font-size:15px}
+.barra nav{display:flex;flex-wrap:wrap;gap:0 22px;font-size:15px}
 .barra nav a{color:#fff;padding-block:10px}
 .heroe h1{font-size:clamp(38px,5.2vw,74px);max-width:21ch;margin-top:clamp(10px,1.6vw,22px)}
 .bajada{font-size:clamp(17px,1.5vw,20px);color:var(--menta-suave);margin-top:16px;max-width:62ch}
@@ -92,6 +92,7 @@ thead th{position:sticky;top:0;background:var(--fondo-2);font-weight:600}
 .b-fila{display:grid;grid-template-columns:minmax(0,300px) 1fr;gap:6px 28px;align-items:center}
 .b-nombre b{display:block;font-weight:700}
 .b-nombre span{font-size:14px;color:var(--tinta-2);display:block;line-height:1.35}
+.b-nombre span.b-precio{font-size:15px;font-weight:600;color:var(--tinta)}
 .b-pista{position:relative;height:40px}
 .barras::after{content:"";position:absolute;left:calc(328px + (100% - 328px)*var(--l100)/100);top:-4px;bottom:-4px;width:2px;background:var(--tinta);box-shadow:0 0 0 1px var(--banda)}
 .b-marcas{display:flex;align-items:center;gap:2px;height:100%}
@@ -100,6 +101,9 @@ thead th{position:sticky;top:0;background:var(--fondo-2);font-weight:600}
 .b-num{margin-left:6px;font-size:16px;font-weight:700;background:var(--banda);padding:2px 5px;position:relative;z-index:1}
 .marca-100{position:relative;height:22px;margin-left:calc(300px + 28px);font-size:14px;font-weight:600;margin-top:24px}
 .marca-100 span{position:absolute;left:calc(var(--l100)*1%);transform:translateX(-50%);white-space:nowrap}
+.sin-linea .barras::after{display:none}
+.controles{align-items:flex-end}
+.controles .campo{margin-top:0}
 
 .frase{font-size:clamp(18px,1.6vw,21px);line-height:1.4;font-weight:500;max-width:62ch;margin-top:18px}
 .sub{margin-top:clamp(40px,5vw,64px)}
@@ -111,7 +115,8 @@ thead th{position:sticky;top:0;background:var(--fondo-2);font-weight:600}
 
 .citar{display:grid;grid-template-columns:minmax(0,3fr) minmax(0,2fr);gap:clamp(30px,5vw,72px)}
 .campo{display:block;margin-top:20px;font-weight:600;font-size:15px}
-.campo select{display:block;margin-top:6px;font:500 16px 'Libre Franklin',sans-serif;color:var(--tinta);background:#fff;border:2px solid var(--verde);border-radius:6px;padding:10px 12px;min-height:46px;max-width:100%}
+.campo[hidden],.controles[hidden]{display:none}
+.campo select,.campo input{display:block;margin-top:6px;font:500 16px 'Libre Franklin',sans-serif;color:var(--tinta);background:#fff;border:2px solid var(--verde);border-radius:6px;padding:10px 12px;min-height:46px;max-width:100%}
 .cita{background:var(--menta-suave);border-radius:8px;padding:24px;margin-top:16px;font-size:clamp(18px,1.6vw,21px);line-height:1.4;font-weight:500}
 .boton{display:inline-flex;align-items:center;min-height:46px;background:var(--verde);color:#fff;font:600 16px 'Libre Franklin',sans-serif;border:0;border-radius:6px;padding:10px 18px;margin:16px 10px 0 0;cursor:pointer;text-decoration:none}
 .boton:hover{background:var(--verde-osc)}
@@ -121,7 +126,7 @@ thead th{position:sticky;top:0;background:var(--fondo-2);font-weight:600}
 .limites ul{list-style:none;margin-top:12px}
 .limites li{padding-block:12px;border-top:1px solid var(--linea);font-size:16px}
 
-.metodo{background:var(--fondo-2)}
+.metodo{background:var(--fondo)}
 .metodo .columnas{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:28px 56px;margin-top:24px}
 .metodo h3{font-size:22px;margin-bottom:8px}
 .metodo p,.metodo li{font-size:16px;max-width:64ch}
@@ -133,6 +138,8 @@ footer{background:var(--verde-osc);color:var(--menta-suave);font-size:15px;paddi
   .barras::after,.marca-100{display:none}
   .barras{margin-top:26px;gap:22px}
   .b-pista::after{content:"";position:absolute;left:calc(var(--l100)*1%);top:-7px;bottom:-7px;width:2px;background:var(--tinta);box-shadow:0 0 0 1px var(--banda)}
+  .sin-linea .b-fila{row-gap:6px}
+  .sin-linea .b-pista::after,.sin-linea .b-pista::before{display:none}
   .b-pista::before{content:var(--rotulo);position:absolute;left:calc(var(--l100)*1%);top:-26px;transform:translateX(-50%);font-size:13px;font-weight:600}
   .controles .selector{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:2px}
   .controles .selector button{padding:8px 6px;line-height:1.2;font-size:14px}
@@ -151,7 +158,7 @@ footer{background:var(--verde-osc);color:var(--menta-suave);font-size:15px;paddi
   <div class="envoltura">
     <div class="barra">
       <div class="marca">Monitor del bolsillo</div>
-      <nav aria-label="Secciones"><a href="#historia">Historia</a><a href="#ingresos">Ingresos</a><a href="#poder">Poder de compra</a><a href="#pobreza">Pobreza</a><a href="#citar">Citar</a><a href="#metodo">Metodología</a></nav>
+      <nav aria-label="Secciones"><a href="#historia">Historia</a><a href="#ingresos">Ingresos</a><a href="#poder">Poder de compra</a><a href="#precios">Precios</a><a href="#pobreza">Pobreza</a><a href="#citar">Citar</a><a href="#metodo">Metodología</a></nav>
     </div>
     <h1>Una familia de&nbsp;4 necesita {{SALARIOS_REDONDO}}&nbsp;salarios mínimos para no ser pobre</h1>
     <p class="bajada">Gran Buenos Aires, {{MES}}. Cada cuadro de abajo es un salario mínimo bruto de {{SALARIO_MINIMO}}.</p>
@@ -238,7 +245,7 @@ footer{background:var(--verde-osc);color:var(--menta-suave);font-size:15px;paddi
         </div>
         <div class="lienzo" id="lienzo-poder"><div class="tip"></div></div>
         <p class="sr" id="anuncio-poder" role="status" aria-live="polite"></p>
-        <p class="nota">La línea marca lo que compraba el ingreso en el mes elegido arriba. Tocá o pasá por el gráfico para ver cada mes; con el teclado, usá las flechas.</p>
+        <p class="nota">La línea marca lo que compraba el ingreso en el mes elegido arriba. El punto más bajo de muchas series es de principios de 2024: después de la devaluación del peso de diciembre de 2023, los precios del Gran Buenos Aires subieron 25% en diciembre, 20% en enero y 15% en febrero, más rápido que los ingresos. Tocá o pasá por el gráfico para ver cada mes; con el teclado, usá las flechas.</p>
         <details>
           <summary>Ver todos los meses como tabla</summary>
           <p class="nota" id="poder-tabla-nota">Cada ingreso en pesos de {{PODER_MES_PESOS}}: lo que valía ese mes, llevado a precios de hoy con el índice de precios del Gran Buenos Aires.</p>
@@ -253,7 +260,66 @@ footer{background:var(--verde-osc);color:var(--menta-suave);font-size:15px;paddi
     </div>
   </section>
 
-  <section class="banda-gris" id="pobreza">
+  <section class="banda-gris" id="precios">
+    <div class="envoltura">
+      <div class="grafico-cabeza">
+        <div>
+          <h2>Qué compra un ingreso en cada región</h2>
+          <p class="intro">Cada barra muestra cuánto de un producto se compra con un ingreso entero, según el precio promedio que releva el INDEC en cada región. Es una forma de medir: nadie gasta todo su ingreso en un solo producto.</p>
+        </div>
+        <div class="controles">
+          <label class="campo" for="precio-producto">Producto
+            <select id="precio-producto"></select>
+          </label>
+          <div class="selector" role="group" aria-label="Ingreso del gráfico de precios">
+            <button type="button" aria-pressed="true" data-compra="smvm">Salario mínimo</button>
+            <button type="button" aria-pressed="false" data-compra="ripte">Sueldo registrado</button>
+            <button type="button" aria-pressed="false" data-compra="haber">Jubilación mínima</button>
+            <button type="button" aria-pressed="false" data-compra="propio">Otro monto</button>
+          </div>
+          <label class="campo" for="precio-monto" id="precio-monto-campo" hidden>Tu ingreso por mes, en pesos
+            <input id="precio-monto" type="text" inputmode="numeric" autocomplete="off" maxlength="13" placeholder="Por ejemplo, 800.000">
+          </label>
+        </div>
+      </div>
+      <p class="frase" id="precio-frase" aria-live="polite"></p>
+      <div class="comparacion sin-linea">
+        <div class="barras" id="precio-barras"></div>
+      </div>
+      <p class="nota">Los precios son promedios de lo que el INDEC releva en las ciudades más grandes de cada región para el índice de precios: no son de una marca ni de un comercio en particular. Los salarios están en bruto y la jubilación va sin bono. Si escribís un monto propio, queda en tu navegador: no se guarda ni se envía. Fuentes: INDEC, Secretaría de Trabajo y ANSES.</p>
+
+      <div class="sub">
+        <div class="grafico-cabeza">
+          <div>
+            <h3>Mes por mes</h3>
+            <p class="intro" id="precio-intro"></p>
+          </div>
+          <div class="controles" id="precio-region-control">
+            <label class="campo" for="precio-region">Región
+              <select id="precio-region"></select>
+            </label>
+          </div>
+        </div>
+        <div id="precio-serie">
+          <div class="lienzo" id="lienzo-precio"><div class="tip"></div></div>
+          <p class="nota">Producto e ingreso son los elegidos arriba. El punto más bajo de muchas series es de principios de 2024: después de la devaluación del peso de diciembre de 2023, los precios del Gran Buenos Aires subieron 25% en diciembre, 20% en enero y 15% en febrero, más rápido que los ingresos. En marzo de 2020 el INDEC no publicó algunos precios de la Patagonia. Tocá o pasá por el gráfico para ver cada mes; con el teclado, usá las flechas.</p>
+        </div>
+        <p class="sr" id="anuncio-precio" role="status" aria-live="polite"></p>
+        <details>
+          <summary>Ver los precios de {{PRECIOS_MES}} como tabla</summary>
+          <div class="tabla-caja" tabindex="0" role="region" aria-label="Precios promedio por región, {{PRECIOS_MES}}">
+            <table>
+              <thead><tr><th scope="col">Producto</th><th scope="col">Presentación</th><th scope="col">Gran Buenos Aires</th><th scope="col">Pampeana</th><th scope="col">Noreste</th><th scope="col">Noroeste</th><th scope="col">Cuyo</th><th scope="col">Patagonia</th></tr></thead>
+              <tbody>{{PRECIOS_TABLA}}</tbody>
+            </table>
+          </div>
+        </details>
+        <a class="boton sec" href="datos/precios.csv" download>Descargar los precios</a>
+      </div>
+    </div>
+  </section>
+
+  <section id="pobreza">
     <div class="envoltura">
       <div class="grafico-cabeza">
         <div>
@@ -295,7 +361,7 @@ footer{background:var(--verde-osc);color:var(--menta-suave);font-size:15px;paddi
     </div>
   </section>
 
-  <section id="citar">
+  <section class="banda-gris" id="citar">
     <div class="envoltura citar">
       <div>
         <h2>Citalo tal cual</h2>
@@ -315,6 +381,7 @@ footer{background:var(--verde-osc);color:var(--menta-suave);font-size:15px;paddi
           <li>El RIPTE incluye solo a personas registradas y estables, y su fuente aclara que no mide la evolución de los salarios.</li>
           <li>El bono de jubilados se muestra solo en el último mes disponible.</li>
           <li>El poder de compra se puede medir desde diciembre de 2016, el primer mes del índice de precios actual.</li>
+          <li>Los precios por región son promedios del INDEC en las ciudades más grandes de cada región, no de un comercio en particular.</li>
           <li>La pobreza y el empleo se miden en 31 aglomerados urbanos de todo el país, no solo en el Gran Buenos Aires.</li>
         </ul>
       </div>
@@ -334,6 +401,10 @@ footer{background:var(--verde-osc);color:var(--menta-suave);font-size:15px;paddi
           <p>Cada ingreso se divide por el índice de precios al consumidor del Gran Buenos Aires de su mismo mes, y el resultado se compara con el del mes elegido. Los salarios mínimos necesarios cambian por dos motivos: cuánto sube la canasta frente al resto de los precios y cuánto compra el salario. Si la canasta sube casi lo mismo que los precios, todo el cambio viene del salario.</p>
         </div>
         <div>
+          <h3>Qué compra cada ingreso por región</h3>
+          <p>Se divide el ingreso de cada mes por el precio promedio de un producto en cada región. El INDEC publica el precio, pero no su presentación (kilo, litro, docena): la página la toma de la planilla oficial de precios promedio. Los ingresos son nacionales, así que las diferencias entre regiones vienen solo de los precios.</p>
+        </div>
+        <div>
           <h3>Pobreza y empleo</h3>
           <p>Los porcentajes de pobreza, indigencia y desocupación son los que publica el INDEC con la Encuesta Permanente de Hogares. Para el empleo informal, la página divide la tasa de empleo informal por la tasa de empleo, las dos sobre la población total, y lo expresa en personas cada 100 ocupadas.</p>
         </div>
@@ -342,6 +413,7 @@ footer{background:var(--verde-osc);color:var(--menta-suave);font-size:15px;paddi
           <ul>
             <li><a href="https://api.indec.gob.ar/docs">Canastas básicas: API del INDEC</a></li>
             <li><a href="https://api.indec.gob.ar/docs">Índice de precios, pobreza y empleo: API del INDEC</a></li>
+            <li><a href="https://www.indec.gob.ar/ftp/cuadros/economia/sh_ipc_precios_promedio.xls">Presentación de cada producto: planilla de precios promedio del INDEC</a></li>
             <li><a href="https://www.indec.gob.ar/ftp/cuadros/sociedad/EPH_metodologia_22_pobreza.pdf">Adultos equivalentes: Metodología 22 del INDEC</a></li>
             <li><a href="https://datos.gob.ar/dataset/sspm-salario-minimo-vital-movil-pesos-corrientes">Salario mínimo: Secretaría de Trabajo</a></li>
             <li><a href="https://datos.gob.ar/dataset/sspm-haber-minimo-jubilatorio">Jubilación mínima: ANSES</a></li>
@@ -358,6 +430,7 @@ footer{background:var(--verde-osc);color:var(--menta-suave);font-size:15px;paddi
 
 <script id="datos" type="application/json">{{DATOS_JSON}}</script>
 <script id="datos-sociales" type="application/json">{{DATOS_SOCIALES}}</script>
+<script id="datos-precios" type="application/json">{{DATOS_PRECIOS}}</script>
 <script>
 (function(){
   const datos=JSON.parse(document.getElementById('datos').textContent);
@@ -567,7 +640,74 @@ footer{background:var(--verde-osc);color:var(--menta-suave);font-size:15px;paddi
   }
   selector('pobreza',v=>{estadoPobreza.serie=v;pobreza();anuncioPobreza.textContent=(v==='pobreza'?'Pobreza':'Indigencia')+' por semestre.'});
 
-  function todo(){historia();poder();pobreza();acomodarMontos(document)}
+  // Precios por región: cuánto de un producto compra un ingreso entero.
+  const precios=JSON.parse(document.getElementById('datos-precios').textContent);
+  const COMPRA={smvm:'un salario mínimo',ripte:'un sueldo promedio registrado',haber:'una jubilación mínima sin bono'};
+  const estadoPrecio={ingreso:'smvm',producto:precios.productos[0].id,region:precios.regiones[0].id,monto:null};
+  const prodSel=document.getElementById('precio-producto'),regSel=document.getElementById('precio-region');
+  const barrasPrecio=document.getElementById('precio-barras'),frasePrecio=document.getElementById('precio-frase');
+  const introPrecio=document.getElementById('precio-intro'),anuncioPrecio=document.getElementById('anuncio-precio');
+  const montoCampo=document.getElementById('precio-monto-campo'),montoInput=document.getElementById('precio-monto');
+  const serieBox=document.getElementById('precio-serie'),regionControl=document.getElementById('precio-region-control');
+  const porMes={};datos.forEach(d=>{porMes[d.p]=d});
+  const entero=v=>Math.round(v).toLocaleString('es-AR');
+  const cantidad=v=>v<10?coma(v,1):entero(v);
+  const mayuscula=t=>t.charAt(0).toUpperCase()+t.slice(1);
+  [...new Set(precios.productos.map(p=>p.grupo))].forEach(g=>{
+    const grupo=document.createElement('optgroup');grupo.label=g;
+    precios.productos.filter(p=>p.grupo===g).forEach(p=>grupo.append(new Option(p.nombre,p.id)));
+    prodSel.append(grupo);
+  });
+  precios.regiones.forEach(r=>regSel.append(new Option(r.nombre,r.id)));
+  // Último mes con precio y con el ingreso elegido: el RIPTE sale más tarde que los precios.
+  const mesConIngreso=c=>{for(let k=precios.meses.length-1;k>=0;k--){const d=porMes[precios.meses[k]];if(d&&d[c])return k}};
+  function precioRegion(){
+    const c=estadoPrecio.ingreso,propio=c==='propio',prod=precios.productos.find(p=>p.id===estadoPrecio.producto),vals=precios.valores[prod.id];
+    // Con un monto propio se usan los precios del último mes.
+    const k=propio?precios.meses.length-1:mesConIngreso(c),p=precios.meses[k];
+    const ingreso=propio?estadoPrecio.monto:porMes[p][c];
+    montoCampo.hidden=!propio;serieBox.hidden=propio;regionControl.hidden=propio;
+    if(propio)introPrecio.textContent='Con un monto propio no hay serie mes por mes, porque un ingreso de hoy no se compara con los precios de otros años. Elegí un ingreso oficial para verla.';
+    if(!ingreso){barrasPrecio.innerHTML='';frasePrecio.textContent='Escribí un monto para ver cuánto compra en cada región.';return}
+    const filas=precios.regiones.map(r=>({r,precio:vals[r.id][k],q:ingreso/vals[r.id][k]}));
+    const tope=Math.max.apply(null,filas.map(f=>f.q));
+    barrasPrecio.innerHTML=filas.map(f=>'<div class="b-fila"><div class="b-nombre"><b>'+f.r.nombre+'</b><span class="b-precio">'+mayuscula(prod.precio)+': '+pesos(f.precio)+'</span><span>'+f.r.provincias+'</span></div><div class="b-pista"><div class="b-marcas"><span class="seg" style="width:calc((100% - 130px)*'+(f.q/tope).toFixed(4)+')"></span><b class="b-num">'+cantidad(f.q)+' '+prod.corta+'</b></div></div></div>').join('');
+    const orden=filas.slice().sort((a,b)=>b.q-a.q),barato=orden[0],caro=orden[orden.length-1];
+    if(propio){
+      frasePrecio.textContent='Con '+pesos(ingreso)+', a los precios de '+nombreMes(p)+', se compran '+cantidad(barato.q)+' '+prod.larga+' en '+barato.r.en+', donde '+prod.precio+' cuesta '+pesos(barato.precio)+', y '+cantidad(caro.q)+' en '+caro.r.en+', donde cuesta '+pesos(caro.precio)+'.';
+      return;
+    }
+    const inicio=porMes[precios.meses[0]][c],antes=precios.regiones.map(r=>inicio/vals[r.id][0]);
+    frasePrecio.textContent='En '+nombreMes(p)+', '+COMPRA[c]+' de '+pesos(ingreso)+' alcanzaba para '+cantidad(barato.q)+' '+prod.larga+' en '+barato.r.en+', donde '+prod.precio+' costaba '+pesos(barato.precio)+', y para '+cantidad(caro.q)+' en '+caro.r.en+', donde costaba '+pesos(caro.precio)+'. En '+nombreMes(precios.meses[0])+' alcanzaba para entre '+entero(Math.min.apply(null,antes))+' y '+entero(Math.max.apply(null,antes))+', según la región.';
+    const region=precios.regiones.find(r=>r.id===estadoPrecio.region),serie=vals[region.id];
+    introPrecio.textContent=mayuscula(prod.larga)+' que compraba '+COMPRA[c]+' cada mes en '+region.en+'.';
+    const meses=precios.meses.map(m=>({p:m}));
+    const puntos=precios.meses.map((m,i)=>{const d=porMes[m];return{i,p:m,v:d&&d[c]&&serie[i]?d[c]/serie[i]:null}}).filter(d=>d.v!=null);
+    grafico({
+      lienzo:document.getElementById('lienzo-precio'),anuncio:anuncioPrecio,total:meses.length,puntos,anios:aniosMes(meses),
+      nombre:d=>nombreMes(d.p),corto:d=>corto(d.p),tip:v=>entero(v)+' '+prod.corta,rotulo:v=>entero(v),eje:v=>entero(v),
+      izq:44,unidad:prod.corta,
+      aria:u=>mayuscula(prod.larga)+' que compraba '+COMPRA[c]+' cada mes en '+region.en+'. Último dato: '+entero(u.v)+' en '+nombreMes(u.p)+'.'
+    });
+  }
+  prodSel.addEventListener('change',()=>{estadoPrecio.producto=prodSel.value;precioRegion()});
+  regSel.addEventListener('change',()=>{estadoPrecio.region=regSel.value;precioRegion()});
+  selector('compra',v=>{
+    // Al elegir un monto propio, arranca con el ingreso que estaba elegido para que nunca quede vacío.
+    if(v==='propio'&&!estadoPrecio.monto&&estadoPrecio.ingreso!=='propio'){
+      const c=estadoPrecio.ingreso;estadoPrecio.monto=Math.round(porMes[precios.meses[mesConIngreso(c)]][c]);
+      montoInput.value=entero(estadoPrecio.monto);
+    }
+    estadoPrecio.ingreso=v;precioRegion();anuncioPrecio.textContent=frasePrecio.textContent;
+    if(v==='propio')montoInput.focus();
+  });
+  montoInput.addEventListener('input',()=>{
+    const n=Math.min(+montoInput.value.replace(/\D/g,'')||0,1e9);
+    estadoPrecio.monto=n||null;precioRegion();
+  });
+  montoInput.addEventListener('change',()=>{if(estadoPrecio.monto)montoInput.value=entero(estadoPrecio.monto)});
+
+  function todo(){historia();poder();precioRegion();pobreza();acomodarMontos(document)}
   // Se redibuja solo si cambia el ancho, también cuando la página se abrió en una pestaña oculta.
   let ancho=document.getElementById('lienzo').clientWidth,espera;
   const alCambiar=()=>{

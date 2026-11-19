@@ -56,6 +56,16 @@ TRIMESTRES_API = [
 ]
 
 
+def filas_precios(meses=("201706", "201707", "201708"), precio=1000.0):
+    """Filas de la API con todos los productos en todas las regiones; el precio sube 10% por mes."""
+    return [
+        {"region": region, "codigo": codigo, "periodo": mes, "valor": precio * 1.1 ** k, "valor_null": None}
+        for codigo, *_ in ind.PRODUCTOS
+        for region, *_ in ind.REGIONES
+        for k, mes in enumerate(meses)
+    ]
+
+
 class Formatos(unittest.TestCase):
     def test_numeros_en_formato_argentino(self):
         self.assertEqual(ind.numero(1632504.69), "1.632.505")
@@ -294,6 +304,67 @@ class Calculo(unittest.TestCase):
         self.assertEqual(barras[3].nota, "")
 
 
+class PreciosPorRegion(unittest.TestCase):
+    def test_ordena_por_producto_y_region(self):
+        precios = ind.interpretar_precios(filas_precios())
+        self.assertEqual(precios["meses"], ["2017-06", "2017-07", "2017-08"])
+        self.assertEqual(len(precios["valores"]), len(ind.PRODUCTOS))
+        self.assertAlmostEqual(precios["valores"]["01.1.1.1.05"]["Noreste"][-1], 1210.0)
+
+    def test_ignora_otros_productos_y_meses_anteriores(self):
+        filas = filas_precios() + [
+            {"region": "GBA", "codigo": "01.1.2.1.02", "periodo": "201707", "valor": 5.0, "valor_null": None},
+            {"region": "GBA", "codigo": "01.1.1.1.05", "periodo": "201605", "valor": 5.0, "valor_null": None},
+        ]
+        precios = ind.interpretar_precios(filas)
+        self.assertNotIn("01.1.2.1.02", precios["valores"])
+        self.assertEqual(precios["meses"][0], "2017-06")
+
+    def test_acepta_un_mes_vacio_marcado_por_el_indec(self):
+        filas = filas_precios()
+        hueco = next(f for f in filas if f["region"] == "Patagonia" and f["periodo"] == "201707")
+        hueco.update(valor=None, valor_null="///")
+        precios = ind.interpretar_precios(filas)
+        self.assertIsNone(precios["valores"][hueco["codigo"]]["Patagonia"][1])
+
+    def test_falla_si_el_ultimo_mes_esta_vacio(self):
+        filas = filas_precios()
+        filas[2].update(valor=None, valor_null="///")
+        with self.assertRaises(ind.DatosInvalidos):
+            ind.interpretar_precios(filas)
+
+    def test_falla_si_falta_un_mes_sin_aviso(self):
+        filas = [f for f in filas_precios() if not (f["region"] == "Cuyo" and f["periodo"] == "201707")]
+        with self.assertRaises(ind.DatosInvalidos):
+            ind.interpretar_precios(filas)
+
+    def test_falla_si_falta_una_region(self):
+        filas = [f for f in filas_precios() if f["region"] != "Noroeste"]
+        with self.assertRaises(ind.DatosInvalidos):
+            ind.interpretar_precios(filas)
+
+    def test_avisa_si_el_precio_se_duplica(self):
+        filas = filas_precios()
+        filas[2]["valor"] *= 3
+        alertas = ind.revisar_saltos_de_precios(ind.interpretar_precios(filas))
+        self.assertEqual(len(alertas), 1)
+        self.assertIn("Pan francés en GBA", alertas[0])
+        self.assertEqual(ind.revisar_saltos_de_precios(ind.interpretar_precios(filas_precios())), [])
+
+    def test_csv_de_precios(self):
+        filas = filas_precios()
+        filas[1].update(valor=None, valor_null="///")
+        precios = ind.interpretar_precios(filas)
+        with tempfile.TemporaryDirectory() as carpeta:
+            destino = Path(carpeta) / "precios.csv"
+            ind.escribir_csv_precios(destino, precios)
+            lineas = destino.read_text(encoding="utf-8").splitlines()
+        self.assertEqual(lineas[0], "periodo,region,codigo,producto,presentacion,precio_promedio")
+        self.assertEqual(lineas[1], "2017-06,GBA,01.1.1.1.05,Pan francés,kilo,1000.0")
+        self.assertEqual(lineas[2], "2017-07,GBA,01.1.1.1.05,Pan francés,kilo,")
+        self.assertEqual(len(lineas), 1 + len(ind.PRODUCTOS) * len(ind.REGIONES) * 3)
+
+
 class Sitio(unittest.TestCase):
     def setUp(self):
         self.filas = datos_completos()
@@ -302,11 +373,12 @@ class Sitio(unittest.TestCase):
         self.fecha = datetime(2026, 11, 6)
         self.semestres = ind.interpretar_pobreza(SEMESTRES_API)
         self.trimestres = ind.interpretar_trabajo(TRIMESTRES_API)
+        self.precios = ind.interpretar_precios(filas_precios())
 
     def armar(self, plantilla, filas=None):
         return ind.armar_sitio(
             plantilla, filas or self.filas, self.barras, self.bono, [], self.fecha,
-            self.semestres, self.trimestres, self.bonos,
+            self.semestres, self.trimestres, self.bonos, precios=self.precios,
         )
 
     def test_plantilla_real_queda_completa(self):
@@ -318,6 +390,8 @@ class Sitio(unittest.TestCase):
         self.assertIn("que hoy es el 91% de lo que compraba entonces", pagina)
         self.assertIn("45 de cada 100 personas ocupadas", pagina)
         self.assertIn('"bases":["2016-12","2017-01"]', pagina)
+        self.assertIn("Ver los precios de agosto de 2017 como tabla", pagina)
+        self.assertIn("<tr><td>Huevos</td><td>docena</td><td>$1.210</td>", pagina)
         self.assertNotIn("{{", pagina)
 
     def test_marcador_desconocido_falla(self):
@@ -327,7 +401,7 @@ class Sitio(unittest.TestCase):
     def test_datos_no_cierran_el_script(self):
         semestres = [dict(s) for s in self.semestres]
         self.semestres = semestres
-        pagina = self.armar("{{DATOS_JSON}}{{DATOS_SOCIALES}}")
+        pagina = self.armar("{{DATOS_JSON}}{{DATOS_SOCIALES}}{{DATOS_PRECIOS}}")
         self.assertNotIn("</", pagina)
 
     def test_csv_de_pobreza_y_trabajo(self):

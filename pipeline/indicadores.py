@@ -52,6 +52,44 @@ INICIO_IPC = "2016-12"
 USER_AGENT = "monitor-del-bolsillo"
 ZONA_ARGENTINA = timezone(timedelta(hours=-3))
 
+# Precios promedio que publica el INDEC para las seis regiones desde junio de 2017.
+INICIO_PRECIOS = "2017-06"
+# La API trae el precio pero no la presentación (kilo, litro, docena): sale de la planilla
+# oficial "Precios al consumidor de una selección de alimentos, bebidas y otros artículos"
+# (https://www.indec.gob.ar/ftp/cuadros/economia/sh_ipc_precios_promedio.xls).
+# Código, nombre, grupo, presentación del precio, unidad corta y unidad con el producto.
+PRODUCTOS = (
+    ("01.1.1.1.05", "Pan francés", "Alimentos", "el kilo", "kilos", "kilos de pan francés"),
+    ("01.1.1.3.11", "Harina de trigo común", "Alimentos", "el kilo", "kilos", "kilos de harina de trigo común"),
+    ("01.1.1.3.01", "Arroz blanco simple", "Alimentos", "el kilo", "kilos", "kilos de arroz blanco"),
+    ("01.1.1.4.04", "Fideos secos guiseros", "Alimentos", "el paquete de 500 g", "paquetes",
+     "paquetes de fideos secos de 500 g"),
+    ("01.1.2.1.08", "Carne picada común", "Alimentos", "el kilo", "kilos", "kilos de carne picada común"),
+    ("01.1.2.2.01", "Pollo entero", "Alimentos", "el kilo", "kilos", "kilos de pollo entero"),
+    ("01.1.5.1.02", "Aceite de girasol", "Alimentos", "la botella de 1,5 litros", "botellas",
+     "botellas de aceite de girasol de 1,5 litros"),
+    ("01.1.4.1.01", "Leche entera en sachet", "Alimentos", "el litro", "litros", "litros de leche entera en sachet"),
+    ("01.1.4.4.01", "Huevos", "Alimentos", "la docena", "docenas", "docenas de huevos"),
+    ("01.1.7.1.19", "Papa", "Alimentos", "el kilo", "kilos", "kilos de papa"),
+    ("01.1.8.1.01", "Azúcar", "Alimentos", "el kilo", "kilos", "kilos de azúcar"),
+    ("05.6.1.1.08", "Detergente líquido", "Limpieza e higiene", "la botella de 750 cc", "botellas",
+     "botellas de detergente de 750 cc"),
+    ("05.6.1.1.12", "Lavandina", "Limpieza e higiene", "el litro", "litros", "litros de lavandina"),
+    ("12.1.3.2.11", "Jabón de tocador", "Limpieza e higiene", "el jabón de 125 g", "jabones",
+     "jabones de tocador de 125 g"),
+)
+# Código de la API, nombre, provincias y la región dicha dentro de una frase.
+# Las provincias salen de las ciudades del cuadro 5 de la Metodología 32 del INDEC.
+REGIONES = (
+    ("GBA", "Gran Buenos Aires", "Ciudad de Buenos Aires y 24 partidos del conurbano", "el Gran Buenos Aires"),
+    ("Pampeana", "Pampeana", "Interior de Buenos Aires, Córdoba, Entre Ríos, La Pampa y Santa Fe",
+     "la región pampeana"),
+    ("Noreste", "Noreste", "Chaco, Corrientes, Formosa y Misiones", "el Noreste"),
+    ("Noroeste", "Noroeste", "Catamarca, Jujuy, La Rioja, Salta, Santiago del Estero y Tucumán", "el Noroeste"),
+    ("Cuyo", "Cuyo", "Mendoza, San Juan y San Luis", "Cuyo"),
+    ("Patagonia", "Patagonia", "Chubut, Neuquén, Río Negro, Santa Cruz y Tierra del Fuego", "la Patagonia"),
+)
+
 # Unidades de adulto equivalente de la Metodología 22 del INDEC, anexo 7.1.
 ADULTOS_HOGAR_TIPO = 3.09
 ADULTOS_JUBILADO = 0.83
@@ -151,6 +189,81 @@ def bajar_ipc(token: str) -> list[dict]:
         "order": "periodo",
     }
     return _bajar_api(API_IPC, consulta, token)
+
+
+def bajar_precios(token: str) -> list[dict]:
+    """Baja los precios promedio de los productos que el INDEC publica para todas las regiones."""
+    codigos = ",".join(codigo for codigo, *_ in PRODUCTOS)
+    consulta = {
+        "tipo_de_indicador": "eq.Precio promedio",
+        "codigo": f"in.({codigos})",
+        "select": "region,codigo,periodo,valor,valor_null",
+        "order": "region,codigo,periodo",
+    }
+    return _bajar_api(API_IPC, consulta, token)
+
+
+def interpretar_precios(filas: list[dict]) -> dict:
+    """Ordena los precios por producto y región, y valida que estén todos los meses desde junio de 2017.
+
+    Devuelve los meses y, para cada producto y región, una lista de precios alineada con esos meses.
+    Un mes puede quedar vacío solo si el INDEC lo marca con un signo convencional (por ejemplo,
+    la Patagonia en marzo de 2020), y nunca el primero ni el último.
+    """
+    regiones = {codigo for codigo, *_ in REGIONES}
+    productos = {codigo for codigo, *_ in PRODUCTOS}
+    precios: dict[tuple[str, str], dict[str, float | None]] = {}
+    for fila in filas:
+        if {"region", "codigo", "periodo", "valor"} - fila.keys():
+            raise DatosInvalidos("Los precios promedio de la API del INDEC cambiaron de formato.")
+        periodo = str(fila["periodo"])
+        if not re.fullmatch(r"\d{6}", periodo):
+            raise DatosInvalidos(f"Período inesperado en los precios promedio: {periodo!r}.")
+        periodo = f"{periodo[:4]}-{periodo[4:]}"
+        clave = (fila["codigo"], fila["region"])
+        if clave[0] not in productos or clave[1] not in regiones or periodo < INICIO_PRECIOS:
+            continue
+        if fila["valor"] is None and fila.get("valor_null"):
+            precios.setdefault(clave, {})[periodo] = None
+            continue
+        if fila["valor"] is None or float(fila["valor"]) <= 0:
+            raise DatosInvalidos(f"Precio vacío o no positivo: {clave[0]} en {clave[1]}, {periodo}.")
+        precios.setdefault(clave, {})[periodo] = float(fila["valor"])
+    if not precios:
+        raise DatosInvalidos("La API del INDEC no devolvió precios promedio.")
+    ultimo = max(max(meses) for meses in precios.values())
+    meses, periodo = [], INICIO_PRECIOS
+    while periodo <= ultimo:
+        meses.append(periodo)
+        periodo = _siguiente(periodo)
+    valores: dict[str, dict[str, list[float | None]]] = {}
+    for codigo, *_ in PRODUCTOS:
+        for region, *_ in REGIONES:
+            serie = precios.get((codigo, region), {})
+            faltan = [mes for mes in meses if mes not in serie]
+            faltan += [mes for mes in (meses[0], meses[-1]) if serie.get(mes) is None]
+            if faltan:
+                raise DatosInvalidos(f"Falta el precio de {codigo} en {region} para {faltan[0]}.")
+            valores.setdefault(codigo, {})[region] = [serie[mes] for mes in meses]
+    return {"meses": meses, "valores": valores}
+
+
+def revisar_saltos_de_precios(precios: dict) -> list[str]:
+    """Avisa si un precio del último mes se duplicó o cayó a la mitad.
+
+    Puede ser un cambio real, pero también que el INDEC cambió la presentación
+    (por ejemplo, de botella de 1,5 litros a 900 cc), que la API no informa.
+    """
+    alertas = []
+    nombres = {codigo: nombre for codigo, nombre, *_ in PRODUCTOS}
+    for codigo, regiones in precios["valores"].items():
+        for region, serie in regiones.items():
+            if len(serie) > 1 and serie[-2] and not 0.5 <= serie[-1] / serie[-2] <= 2:
+                alertas.append(
+                    f"Revisar el precio de {nombres[codigo]} en {region}: pasó de {pesos(serie[-2])} "
+                    f"a {pesos(serie[-1])}. Si cambió la presentación, hay que corregirla en PRODUCTOS."
+                )
+    return alertas
 
 
 def interpretar_ipc(filas: list[dict]) -> dict[str, float]:
@@ -644,6 +757,45 @@ def tabla_html(filas: list[dict]) -> str:
     return "".join(salida)
 
 
+def _presentacion(texto: str) -> str:
+    """Saca el artículo: "el kilo" queda "kilo"."""
+    return texto.split(" ", 1)[1]
+
+
+def tabla_precios_html(precios: dict) -> str:
+    """Precios del último mes: un producto por fila y una región por columna."""
+    salida = []
+    for codigo, nombre, _, presentacion, *_ in PRODUCTOS:
+        celdas = "".join(f"<td>{pesos(precios['valores'][codigo][region][-1])}</td>" for region, *_ in REGIONES)
+        salida.append(
+            f"<tr><td>{html.escape(nombre)}</td><td>{html.escape(_presentacion(presentacion))}</td>{celdas}</tr>"
+        )
+    return "".join(salida)
+
+
+def precios_json(precios: dict) -> str:
+    """Datos de la sección de precios para el script de la página."""
+    datos = {
+        "meses": precios["meses"],
+        "regiones": [
+            {"id": codigo, "nombre": nombre, "provincias": provincias, "en": en}
+            for codigo, nombre, provincias, en in REGIONES
+        ],
+        "productos": [
+            {"id": codigo, "nombre": nombre, "grupo": grupo, "precio": presentacion, "corta": corta, "larga": larga}
+            for codigo, nombre, grupo, presentacion, corta, larga in PRODUCTOS
+        ],
+        "valores": {
+            codigo: {
+                region: [None if valor is None else round(valor, 2) for valor in serie]
+                for region, serie in regiones.items()
+            }
+            for codigo, regiones in precios["valores"].items()
+        },
+    }
+    return json.dumps(datos, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/")
+
+
 def frase_cita(fila: dict) -> str:
     return (
         f'En {nombre_mes(fila["periodo"])}, una familia de 4 en el Gran Buenos Aires necesitó '
@@ -677,6 +829,16 @@ def _escribir_tabla(destino: Path, columnas: list[str], filas) -> None:
             escritor.writerow(["" if valor is None else valor for valor in fila])
 
 
+def escribir_csv_precios(destino: Path, precios: dict) -> None:
+    filas = (
+        [mes, region, codigo, nombre, _presentacion(presentacion), precios["valores"][codigo][region][indice]]
+        for codigo, nombre, _, presentacion, *_ in PRODUCTOS
+        for region, *_ in REGIONES
+        for indice, mes in enumerate(precios["meses"])
+    )
+    _escribir_tabla(destino, ["periodo", "region", "codigo", "producto", "presentacion", "precio_promedio"], filas)
+
+
 def escribir_csv_sociales(carpeta: Path, semestres: list[dict], trimestres: list[dict]) -> None:
     _escribir_tabla(
         carpeta / "pobreza.csv",
@@ -701,6 +863,7 @@ def armar_sitio(
     trimestres: list[dict],
     bonos: dict[str, float] | None = None,
     fuente_bono: str = "https://www.argentina.gob.ar/anses",
+    precios: dict | None = None,
 ) -> str:
     ultima = filas[-1]
     escala = max(1.5, max(b.cobertura + b.extra for b in barras) * 1.08)
@@ -770,6 +933,9 @@ def armar_sitio(
         "TRABAJO_FRASE": html.escape(frase_trabajo(trimestres)),
         "TRABAJO_ANCHO": f"{trabajo['informalidad']:.1f}",
         "DATOS_SOCIALES": sociales_json,
+        "DATOS_PRECIOS": precios_json(precios) if precios else "null",
+        "PRECIOS_TABLA": tabla_precios_html(precios) if precios else "",
+        "PRECIOS_MES": nombre_mes(precios["meses"][-1]) if precios else "",
     }
     resultado = plantilla
     for clave, valor in reemplazos.items():
@@ -796,6 +962,8 @@ def ejecutar(raiz: Path, salida: Path) -> list[str]:
     aplicar_correcciones(series, correcciones)
     alertas = descartar_caidas_ripte(series["ripte"])
     series["ipc"] = interpretar_ipc(bajar_ipc(token))
+    precios = interpretar_precios(bajar_precios(token))
+    alertas += revisar_saltos_de_precios(precios)
     semestres = interpretar_pobreza(_bajar_api(API_POBREZA, {"order": "periodo"}, token))
     trimestres = interpretar_trabajo(_bajar_api(API_TRABAJO, {"order": "periodo"}, token))
     filas_bono = leer_csv_local(raiz / "datos" / "bonos.csv")
@@ -810,7 +978,8 @@ def ejecutar(raiz: Path, salida: Path) -> list[str]:
     plantilla = (raiz / "sitio" / "plantilla.html").read_text(encoding="utf-8")
     fuente_bono = max(filas_bono, key=lambda f: f["periodo"])["fuente"]
     pagina = armar_sitio(
-        plantilla, filas, barras, bono, correcciones, actualizado, semestres, trimestres, bonos, fuente_bono
+        plantilla, filas, barras, bono, correcciones, actualizado, semestres, trimestres, bonos, fuente_bono,
+        precios,
     )
 
     # Se arma aparte y se reemplaza al final: si algo falla, la salida anterior queda intacta.
@@ -821,6 +990,7 @@ def ejecutar(raiz: Path, salida: Path) -> list[str]:
         (temporal / "index.html").write_text(pagina, encoding="utf-8")
         escribir_csv(temporal / "datos" / "indicadores.csv", filas)
         escribir_csv_sociales(temporal / "datos", semestres, trimestres)
+        escribir_csv_precios(temporal / "datos" / "precios.csv", precios)
         (temporal / "datos" / "indicadores.json").write_text(
             json.dumps(
                 {
@@ -831,12 +1001,14 @@ def ejecutar(raiz: Path, salida: Path) -> list[str]:
                         "ipc": API_IPC,
                         "pobreza": API_POBREZA,
                         "trabajo": API_TRABAJO,
+                        "precios": API_IPC,
                     },
                     "correcciones": correcciones,
                     "bonos": bonos,
                     "meses": filas,
                     "pobreza": semestres,
                     "trabajo": trimestres,
+                    "precios": precios,
                 },
                 ensure_ascii=False,
                 indent=1,
