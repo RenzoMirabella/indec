@@ -82,6 +82,11 @@ thead th{position:sticky;top:0;background:var(--fondo-2);font-weight:600}
 .ley .seg{display:inline-block;width:18px;height:12px;border-radius:2px}
 .seg{display:block;height:100%;background:var(--verde)}
 .seg.bono{background:#37937A}
+.b-marcas .seg{position:relative;overflow:hidden}
+.b-marcas .seg i{position:absolute;left:10px;top:50%;transform:translateY(-50%);font-style:normal;font-size:15px;font-weight:700;color:#fff;white-space:nowrap}
+.b-afuera{display:none;font-weight:600;color:var(--tinta-2)}
+.b-fila.fuera .seg i{display:none}
+.b-fila.fuera .b-afuera{display:inline}
 .barras{margin-top:18px;display:grid;gap:18px;position:relative}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
 .b-fila{display:grid;grid-template-columns:minmax(0,300px) 1fr;gap:6px 28px;align-items:center}
@@ -124,7 +129,7 @@ thead th{position:sticky;top:0;background:var(--fondo-2);font-weight:600}
 footer{background:var(--verde-osc);color:var(--menta-suave);font-size:15px;padding-block:30px}
 
 @media (max-width:760px){
-  .b-fila{grid-template-columns:1fr}
+  .b-fila{grid-template-columns:1fr;row-gap:28px}
   .barras::after,.marca-100{display:none}
   .barras{margin-top:26px;gap:22px}
   .b-pista::after{content:"";position:absolute;left:calc(var(--l100)*1%);top:-7px;bottom:-7px;width:2px;background:var(--tinta);box-shadow:0 0 0 1px var(--banda)}
@@ -490,6 +495,15 @@ footer{background:var(--verde-osc);color:var(--menta-suave);font-size:15px;paddi
   selector('ingreso',v=>{estado.ingreso=v;historia();anuncio.textContent=intro.textContent});
   selector('canasta',v=>{estado.canasta=v;historia();anuncio.textContent=intro.textContent});
 
+  // El monto va dentro de la barra; si no entra, se muestra al lado del porcentaje.
+  function acomodarMontos(raiz){
+    raiz.querySelectorAll('.b-fila').forEach(f=>{
+      const i=f.querySelector('.seg i');if(!i)return;
+      f.classList.remove('fuera');
+      if(i.offsetWidth+20>i.parentElement.offsetWidth)f.classList.add('fuera');
+    });
+  }
+
   // Poder de compra: cada ingreso dividido por el índice de precios, frente al mes elegido.
   const PODER=[['smvm','Salario mínimo','Bruto'],['haber','Jubilación mínima','Sin bono'],['ripte','Sueldo promedio registrado','RIPTE, bruto']];
   const QUIEN={smvm:'el salario mínimo',haber:'la jubilación mínima, sin bono,',ripte:'el sueldo promedio registrado'};
@@ -510,10 +524,13 @@ footer{background:var(--verde-osc);color:var(--menta-suave);font-size:15px;paddi
   sociales.bases.slice().reverse().forEach(p=>{const o=document.createElement('option');o.value=p;o.textContent=nombreMes(p);baseSel.append(o)});
   baseSel.value=estadoPoder.base;
   function barrasDePoder(b){
-    const filas=PODER.map(([c,nombre,detalle])=>{const u=ultimoReal(c);return{nombre,detalle:detalle+', '+nombreMes(u.p),v:real(u,c)/real(b,c)}});
+    const base=nombreMes(b.p);
+    const filas=PODER.map(([c,nombre,detalle])=>{const u=ultimoReal(c);return{nombre,detalle:detalle+', '+nombreMes(u.p),v:real(u,c)/real(b,c),monto:u[c],
+      antes:base.charAt(0).toUpperCase()+base.slice(1)+', en pesos de hoy: '+pesos(b[c]*u.ipc/b.ipc)}});
     const escala=Math.max(1.5,Math.max.apply(null,filas.map(f=>f.v))*1.08);
     comparacion.style.setProperty('--l100',(100/escala).toFixed(2));
-    barrasPoder.innerHTML=filas.map(f=>'<div class="b-fila"><div class="b-nombre"><b>'+f.nombre+'</b><span>'+f.detalle+'</span></div><div class="b-pista"><div class="b-marcas"><span class="seg" style="width:'+(f.v/escala*100).toFixed(2)+'%"></span><b class="b-num">'+pct(f.v)+'</b></div></div></div>').join('');
+    barrasPoder.innerHTML=filas.map(f=>'<div class="b-fila"><div class="b-nombre"><b>'+f.nombre+'</b><span>'+f.detalle+'<br>'+f.antes+'</span></div><div class="b-pista"><div class="b-marcas"><span class="seg" style="width:'+(f.v/escala*100).toFixed(2)+'%"><i>'+pesos(f.monto)+'</i></span><b class="b-num">'+pct(f.v)+'<span class="b-afuera"> · '+pesos(f.monto)+'</span></b></div></div></div>').join('');
+    acomodarMontos(barrasPoder);
   }
   function poder(){
     const b=datos.find(d=>d.p===estadoPoder.base),c=estadoPoder.ingreso;
@@ -550,7 +567,7 @@ footer{background:var(--verde-osc);color:var(--menta-suave);font-size:15px;paddi
   }
   selector('pobreza',v=>{estadoPobreza.serie=v;pobreza();anuncioPobreza.textContent=(v==='pobreza'?'Pobreza':'Indigencia')+' por semestre.'});
 
-  function todo(){historia();poder();pobreza()}
+  function todo(){historia();poder();pobreza();acomodarMontos(document)}
   // Se redibuja solo si cambia el ancho, también cuando la página se abrió en una pestaña oculta.
   let ancho=document.getElementById('lienzo').clientWidth,espera;
   const alCambiar=()=>{

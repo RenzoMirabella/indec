@@ -372,6 +372,8 @@ class Fila:
     cobertura: float
     extra: float = 0.0
     nota: str = ""
+    monto: float = 0.0
+    canasta: float = 0.0
 
 
 def _ultimo_con(filas: list[dict], clave: str) -> dict:
@@ -396,12 +398,25 @@ def coberturas(filas: list[dict], bonos: dict[str, float]) -> tuple[list[Fila], 
         sin_bono = con_haber["haber"] * cantidad / canasta
         extra = bono * cantidad / canasta
         nota = f"Sin bono: {porcentaje(sin_bono)}" if bono else ""
-        return Fila(nombre, f"{detalle}, {mes_haber}", sin_bono, extra, nota)
+        return Fila(
+            nombre, f"{detalle}, {mes_haber}", sin_bono, extra, nota,
+            monto=con_haber["haber"] * cantidad, canasta=canasta,
+        )
 
     resultado = [
-        Fila("Un salario mínimo", f"Familia de 4, {mes}", ultima["smvm"] / ultima["cbt_hogar"]),
-        Fila("Dos salarios mínimos", f"Familia de 4, {mes}", 2 * ultima["smvm"] / ultima["cbt_hogar"]),
-        Fila("Sueldo promedio registrado", f"RIPTE, familia de 4, {mes_ripte}", con_ripte["ripte"] / con_ripte["cbt_hogar"]),
+        Fila(
+            "Un salario mínimo", f"Familia de 4, {mes}", ultima["smvm"] / ultima["cbt_hogar"],
+            monto=ultima["smvm"], canasta=ultima["cbt_hogar"],
+        ),
+        Fila(
+            "Dos salarios mínimos", f"Familia de 4, {mes}", 2 * ultima["smvm"] / ultima["cbt_hogar"],
+            monto=2 * ultima["smvm"], canasta=ultima["cbt_hogar"],
+        ),
+        Fila(
+            "Sueldo promedio registrado", f"RIPTE, familia de 4, {mes_ripte}",
+            con_ripte["ripte"] / con_ripte["cbt_hogar"],
+            monto=con_ripte["ripte"], canasta=con_ripte["cbt_hogar"],
+        ),
         jubilacion("Jubilación mínima, varón solo", "De 61 a 75 años", ADULTOS_JUBILADO, 1),
         jubilacion("Jubilación mínima, mujer sola", "De 61 a 75 años", ADULTOS_JUBILADA, 1),
         jubilacion("Una jubilación mínima, pareja", "De 61 a 75 años", ADULTOS_PAREJA_JUBILADA, 1),
@@ -446,7 +461,11 @@ def poder_de_compra(filas: list[dict], base: str) -> list[Fila]:
     for clave, nombre, detalle in PODER_INGRESOS:
         ultimo = _ultimo_real(filas, clave)
         valor = _real(ultimo, clave) / _real(origen, clave)
-        barras.append(Fila(nombre, f"{detalle}, {nombre_mes(ultimo['periodo'])}", valor))
+        # Lo que valía el ingreso en el mes base, llevado a precios de su último mes.
+        antes = origen[clave] * ultimo["ipc"] / origen["ipc"]
+        mes_base = nombre_mes(base)
+        nota = f"{mes_base[0].upper()}{mes_base[1:]}, en pesos de hoy: {pesos(antes)}"
+        barras.append(Fila(nombre, f"{detalle}, {nombre_mes(ultimo['periodo'])}", valor, nota=nota, monto=ultimo[clave]))
     return barras
 
 
@@ -590,16 +609,22 @@ def barras_html(barras: list[Fila], escala: float) -> str:
     for barra in barras:
         total = barra.cobertura + barra.extra
         ancho = barra.cobertura / escala * 100
-        segmentos = f'<span class="seg" style="width:{ancho:.2f}%"></span>'
+        # El monto va dentro de la barra; si no entra, el script de la página lo pasa al lado del porcentaje.
+        adentro = f"<i>{pesos(barra.monto)}</i>" if barra.monto else ""
+        afuera = f'<span class="b-afuera"> · {pesos(barra.monto)}</span>' if barra.monto else ""
+        segmentos = f'<span class="seg" style="width:{ancho:.2f}%">{adentro}</span>'
         if barra.extra:
             segmentos += f'<span class="seg bono" style="width:{barra.extra / escala * 100:.2f}%"></span>'
         detalle = html.escape(barra.detalle)
+        extras = [f"Canasta: {pesos(barra.canasta)}"] if barra.canasta else []
         if barra.nota:
-            detalle += f"<br>{html.escape(barra.nota)}"
+            extras.append(barra.nota)
+        if extras:
+            detalle += "".join(f"<br>{html.escape(texto)}" for texto in extras)
         salida.append(
             '<div class="b-fila">'
             f'<div class="b-nombre"><b>{html.escape(barra.nombre)}</b><span>{detalle}</span></div>'
-            f'<div class="b-pista"><div class="b-marcas">{segmentos}<b class="b-num">{porcentaje(total)}</b></div></div>'
+            f'<div class="b-pista"><div class="b-marcas">{segmentos}<b class="b-num">{porcentaje(total)}{afuera}</b></div></div>'
             "</div>"
         )
     return "".join(salida)
