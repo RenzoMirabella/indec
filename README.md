@@ -4,7 +4,7 @@ Página pública que muestra cuánto cuesta la canasta básica y cuánto tiempo 
 
 ## Página e indicadores
 
-[`pipeline/indicadores.py`](pipeline/indicadores.py) baja los datos, los valida y arma el sitio a partir de [`sitio/plantilla.html`](sitio/plantilla.html). Una tarea de GitHub Actions lo corre todos los días y publica el resultado en GitHub Pages. Si un dato no pasa las validaciones, la tarea falla y la página anterior sigue publicada.
+[`pipeline/indicadores.py`](pipeline/indicadores.py) baja los datos, los valida y arma el sitio a partir de [`sitio/plantilla.html`](sitio/plantilla.html). Una tarea de GitHub Actions lo corre todos los días a las 19 (hora de Argentina) y cada vez que se suben cambios a `pipeline/`, `sitio/`, `datos/` o `tests/`, y publica el resultado en GitHub Pages. Si un dato no pasa las validaciones, la tarea falla y la página anterior sigue publicada.
 
 ```bash
 python pipeline/indicadores.py --salida _site

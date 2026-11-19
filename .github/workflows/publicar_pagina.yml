@@ -4,6 +4,17 @@ on:
   schedule:
     # Una vez por día: si no hay datos nuevos, la página queda igual salvo la fecha.
     - cron: "0 22 * * *"
+  # También al subir cambios a la página, los datos cargados a mano o el cálculo.
+  # No incluye archivo/: los guardados de SEPA no cambian la página.
+  push:
+    branches: [main]
+    paths:
+      - "pipeline/**"
+      - "sitio/**"
+      - "datos/**"
+      - "tests/**"
+      - "requirements.txt"
+      - ".github/workflows/publicar_pagina.yml"
   workflow_dispatch:
 
 permissions:
